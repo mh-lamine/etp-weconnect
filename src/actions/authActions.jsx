@@ -1,17 +1,8 @@
 import axios from "axios";
-
-const REGISTER_URL = "/api/auth/register";
-const LOGIN_URL = "/api/auth/login";
-
-export async function handleRegister(data) {
-  return await axios.post(REGISTER_URL, data, {
-    headers: { "Content-Type": "application/json" },
-    withCredentials: true,
-  });
-}
+import API from "@/api/endpoints";
 
 export async function handleLogin(data) {
-  return await axios.post(LOGIN_URL, data, {
+  return await axios.post(API.LOGIN_URL, data, {
     headers: { "Content-Type": "application/json" },
     withCredentials: true,
   });

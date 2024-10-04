@@ -8,7 +8,7 @@ export default function Header() {
         <div className="navbar text-primary-800 bg-light shadow-sm w-full">
           <div className="flex items-center justify-between w-full px-4">
             <Link to={"/"} className="text-xl font-semibold">
-              WeConnect Pro
+              WeConnect Entreprise
             </Link>
           </div>
         </div>
