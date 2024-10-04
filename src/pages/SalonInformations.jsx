@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
+import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -30,11 +31,14 @@ export default function SalonInformations() {
   const [prevInfos, setPrevInfos] = useState();
   const [error, setError] = useState();
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
   const [salonInfos, setSalonInfos] = useState();
 
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
   const location = useLocation();
+
+  console.log("prevInfos", prevInfos);
 
   async function getSalon() {
     try {
@@ -46,12 +50,14 @@ export default function SalonInformations() {
       if (error.response?.status === 401) {
         navigate("/login", { state: { from: location }, replace: true });
       }
+    } finally {
+      setFetching(false);
     }
   }
 
   const rmprofile = async () => {
     try {
-      await axiosPrivate.delete("/api/users/profile", {
+      await axiosPrivate.delete("/api/s3/profile", {
         profilePicture: null,
       });
       await getSalon();
@@ -62,7 +68,7 @@ export default function SalonInformations() {
 
   const rmcover = async () => {
     try {
-      await axiosPrivate.delete("/api/users/cover", {
+      await axiosPrivate.delete("/api/s3/cover", {
         coverImage: null,
       });
       await getSalon();
@@ -115,7 +121,7 @@ export default function SalonInformations() {
       return;
     }
     try {
-      await axiosPrivate.patch("/api/users", { salonInfos });
+      await axiosPrivate.patch("/api/salon", { salonInfos });
       await getSalon();
       toast("Modifications enregistrées");
     } catch (error) {
@@ -157,6 +163,10 @@ export default function SalonInformations() {
     }
   };
 
+  if (fetching) {
+    return <Loader2 className="w-8 h-8 animate-spin flex-1" />;
+  }
+
   if (error) {
     return <Error errMsg={error} />;
   }
@@ -186,10 +196,10 @@ export default function SalonInformations() {
       </Breadcrumb>
       <h1 className="text-3xl font-semibold">Mes informations</h1>
       <ProviderHeader
-        name={prevInfos?.name}
-        address={prevInfos?.address}
-        profilePicture={prevInfos?.profilePicture}
-        coverImage={prevInfos?.coverImage}
+        name={prevInfos.name}
+        address={prevInfos.address}
+        profilePicture={prevInfos.profilePicture}
+        coverImage={prevInfos.coverImage}
         rmprofile={rmprofile}
         rmcover={rmcover}
       />
@@ -223,28 +233,28 @@ export default function SalonInformations() {
             id="salonName"
             label="Nom du salon"
             type="text"
-            defaultValue={prevInfos?.name}
+            defaultValue={prevInfos.name}
             handleChange={handleChange}
           />
           <EditableInput
             id="address"
             label="Adresse"
             type="text"
-            defaultValue={prevInfos?.address}
+            defaultValue={prevInfos.address}
             handleChange={handleChange}
           />
           <EditableInput
             id="phoneNumber"
             label="Téléphone du salon"
             type="tel"
-            defaultValue={prevInfos?.phoneNumber}
+            defaultValue={prevInfos.phoneNumber}
             handleChange={handleChange}
           />
           <EditableInput
             id="email"
             label="Email"
             type="email"
-            defaultValue={prevInfos?.email}
+            defaultValue={prevInfos.email}
             handleChange={handleChange}
           />
         </div>
@@ -260,7 +270,7 @@ export default function SalonInformations() {
                 id="autoAccept"
                 checked={
                   salonInfos?.autoAcceptAppointments ??
-                  prevInfos?.autoAcceptAppointments
+                  prevInfos.autoAcceptAppointments
                 }
                 onCheckedChange={(checked) => {
                   setSalonInfos({
@@ -290,7 +300,7 @@ export default function SalonInformations() {
               <Switch
                 id="vacancyMode"
                 checked={
-                  salonInfos?.isInVacancyMode ?? prevInfos?.isInVacancyMode
+                  salonInfos?.isInVacancyMode ?? prevInfos.isInVacancyMode
                 }
                 onCheckedChange={(checked) => {
                   setSalonInfos({
@@ -313,7 +323,7 @@ export default function SalonInformations() {
           <Textarea
             id="bookingTerms"
             type="text"
-            defaultValue={prevInfos?.bookingTerms}
+            defaultValue={prevInfos.bookingTerms}
             onChange={handleChange}
             className="text-lg whitespace-pre-line"
           />
