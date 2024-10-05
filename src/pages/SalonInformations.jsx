@@ -38,8 +38,6 @@ export default function SalonInformations() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  console.log("prevInfos", prevInfos);
-
   async function getSalon() {
     try {
       const { data } = await axiosPrivate.get("/api/salon");
@@ -121,7 +119,7 @@ export default function SalonInformations() {
       return;
     }
     try {
-      await axiosPrivate.patch("/api/salon", { salonInfos });
+      await axiosPrivate.patch("/api/salon", { ...salonInfos });
       await getSalon();
       toast("Modifications enregistrées");
     } catch (error) {
@@ -230,7 +228,7 @@ export default function SalonInformations() {
       <form className="space-y-2">
         <div className="space-y-2 md:space-y-0 md:grid grid-cols-2 md:gap-4">
           <EditableInput
-            id="salonName"
+            id="name"
             label="Nom du salon"
             type="text"
             defaultValue={prevInfos.name}
@@ -329,7 +327,9 @@ export default function SalonInformations() {
           />
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleSubmit} disabled={loading}>Enregistrer les modifications</Button>
+          <Button onClick={handleSubmit} disabled={loading}>
+            Enregistrer les modifications
+          </Button>
           <Button
             variant="outline"
             type="reset"

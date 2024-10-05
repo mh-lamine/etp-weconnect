@@ -15,7 +15,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: "../serv/static/pro-weconnect",
+    outDir: "../serv/static/etp-weconnect",
     emptyOutDir: true,
   },
 });
