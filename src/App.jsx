@@ -21,6 +21,7 @@ const Salon = lazy(() => import("./pages/Salon"));
 const SalonInformations = lazy(() => import("./pages/SalonInformations"));
 const SalonAvailabilities = lazy(() => import("./pages/SalonAvailabilities"));
 const SalonServices = lazy(() => import("./pages/SalonServices"));
+const SalonMembers = lazy(() => import("./pages/SalonMembers"));
 
 export default function App() {
   const { setAuth } = useAuth();
@@ -95,6 +96,14 @@ export default function App() {
                 element={
                   <Suspense fallback={<PageLoader />}>
                     <SalonServices />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="salon/members"
+                element={
+                  <Suspense fallback={<PageLoader />}>
+                    <SalonMembers />
                   </Suspense>
                 }
               />

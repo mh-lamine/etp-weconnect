@@ -53,6 +53,13 @@ const Salon = () => {
           <LeftArrow size={36} />
         </div>
       </Link>
+      <div className="divider my-0"></div>
+      <Link to="members" className="flex items-center justify-between py-2">
+        <h2 className="text-xl font-medium">Membres</h2>
+        <div className="rotate-180">
+          <LeftArrow size={36} />
+        </div>
+      </Link>
     </main>
   );
 };

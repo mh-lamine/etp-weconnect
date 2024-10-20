@@ -45,7 +45,7 @@ export default function LoginPage() {
     } catch (error) {
       console.log(error);
       if (error.response.status === 401) {
-        toast.error("Numéro de téléphone ou mot de passe incorrect");
+        toast.error("Email ou mot de passe incorrect");
       } else {
         toast.error("Une erreur est survenue, veuillez contacter le support");
       }
