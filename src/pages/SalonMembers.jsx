@@ -7,7 +7,6 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -16,14 +15,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { EllipsisVertical } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function SalonMembers() {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     getMembers();
@@ -32,10 +33,9 @@ export default function SalonMembers() {
   async function getMembers() {
     try {
       const { data } = await axiosPrivate.get("/api/salon/members");
-      console.log(data);
       setMembers(data);
     } catch (error) {
-        console.log(error);
+      console.log(error);
       if (error.response?.status === 401) {
         navigate("/login", { state: { from: location }, replace: true });
       } else {
@@ -46,7 +46,6 @@ export default function SalonMembers() {
     }
   }
   async function addMember(member) {
-    
     try {
       await axiosPrivate.post("/api/salon", member);
       getMembers();
@@ -80,7 +79,7 @@ export default function SalonMembers() {
         </BreadcrumbList>
       </Breadcrumb>
       <div>
-        <h1 className="text-3xl font-semibold">Mes membres</h1>
+        <h1 className="text-3xl font-semibold">Mon équipe</h1>
         <ModalAddMember addMember={addMember} />
       </div>
       <Table>
@@ -88,21 +87,18 @@ export default function SalonMembers() {
           <TableRow>
             <TableHead className="w-[100px]">Nom</TableHead>
             <TableHead>Code d'accès</TableHead>
-            <TableHead className="w-[100px]"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {members.map((member) => (
-            <TableRow key={member.id}>
+            <TableRow
+              key={member.id}
+              onClick={() => navigate(`/salon/members/${member.id}`)}
+            >
               <TableCell className="font-medium">
                 {member.firstName} {member.lastName}
               </TableCell>
               <TableCell>{member.accessCode}</TableCell>
-              <TableCell>
-                <Button variant="ghost">
-                  <EllipsisVertical />
-                </Button>
-              </TableCell>
             </TableRow>
           ))}
         </TableBody>

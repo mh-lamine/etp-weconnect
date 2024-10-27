@@ -9,6 +9,7 @@ const EditableInput = ({
   defaultValue,
   placeholder = null,
   handleChange,
+  disabled = false,
 }) => {
   return (
     <div>
@@ -20,6 +21,7 @@ const EditableInput = ({
         defaultValue={defaultValue}
         placeholder={placeholder}
         onChange={handleChange}
+        disabled={disabled}
         className="text-lg"
       />
     </div>
