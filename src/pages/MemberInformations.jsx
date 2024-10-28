@@ -9,13 +9,12 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-export default function MemberSettings() {
+export default function MemberInformations() {
   const [member, setMember] = useState(null);
   const [memberInfos, setMemberInfos] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -95,7 +94,7 @@ export default function MemberSettings() {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to={`/salon/members/${id}`}>
+              <Link to={`/salon/members/${id}/informations`}>
                 {member?.firstName} {member?.lastName}
               </Link>
             </BreadcrumbLink>
@@ -105,84 +104,52 @@ export default function MemberSettings() {
       <h1 className="text-3xl font-semibold">
         {member?.firstName} {member?.lastName}
       </h1>
-      <Tabs defaultValue="infos" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="infos">Informations</TabsTrigger>
-          <TabsTrigger value="availabilities">Disponibilités</TabsTrigger>
-          <TabsTrigger value="services">Prestations</TabsTrigger>
-        </TabsList>
-        <TabsContent value="infos">
-          <p className="text-muted pb-4">Gérez les informations du membre.</p>
-          <form className="space-y-4">
-            <div className="space-y-2 md:space-y-0 md:grid grid-cols-2 md:gap-4">
-              <EditableInput
-                id="firstName"
-                label="Prénom"
-                type="text"
-                defaultValue={member?.firstName}
-                handleChange={handleChange}
-              />
-              <EditableInput
-                id="lastName"
-                label="Nom"
-                type="text"
-                defaultValue={member?.lastName}
-                handleChange={handleChange}
-              />
-              <EditableInput
-                id="accessCode"
-                label="Code d'accès"
-                type="text"
-                defaultValue={member?.accessCode}
-                disabled={true}
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={handleSubmit} disabled={loading}>
-                {loading ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  "Enregistrer les modifications"
-                )}
-              </Button>
-              <Button
-                variant="outline"
-                type="reset"
-                onClick={() => {
-                  setMemberInfos();
-                  setshowActionButtons(false);
-                }}
-              >
-                Annuler
-              </Button>
-            </div>
-          </form>
-        </TabsContent>
-        <TabsContent value="availabilities">
-          <p className="text-muted pb-4">
-            Définissez des horaires spéciales pour ce membre.
-          </p>
-          {/* {Object.entries(daysOfWeek).map(([dayFR, dayEN], i) => (
-            <div key={i}>
-              <DailyAvailability
-                dayFR={dayFR}
-                dayEN={dayEN}
-                availabilities={availabilities && availabilities[dayEN]}
-                createAvailability={createAvailability}
-                removeAvailability={removeAvailability}
-              />
-              {i !== Object.entries(daysOfWeek).length - 1 && (
-                <div className="divider w-1/2 mx-auto" />
-              )}
-            </div>
-          ))} */}
-        </TabsContent>
-        <TabsContent value="services">
-          <p className="text-muted pb-4">
-            Attribuez des prestations à ce membre.
-          </p>
-        </TabsContent>
-      </Tabs>
+      <p className="text-muted">Gérez les informations du membre.</p>
+      <form className="space-y-4">
+        <div className="space-y-2 md:space-y-0 md:grid grid-cols-2 md:gap-4">
+          <EditableInput
+            id="firstName"
+            label="Prénom"
+            type="text"
+            defaultValue={member?.firstName}
+            handleChange={handleChange}
+          />
+          <EditableInput
+            id="lastName"
+            label="Nom"
+            type="text"
+            defaultValue={member?.lastName}
+            handleChange={handleChange}
+          />
+          <EditableInput
+            id="accessCode"
+            label="Code d'accès"
+            type="text"
+            defaultValue={member?.accessCode}
+            disabled={true}
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={handleSubmit} disabled={loading}>
+            {loading ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              "Enregistrer les modifications"
+            )}
+          </Button>
+          <Button
+            variant="outline"
+            type="reset"
+            onClick={() => {
+              setMemberInfos();
+              setshowActionButtons(false);
+            }}
+          >
+            Annuler
+          </Button>
+        </div>
+      </form>
+
       <div className="mt-auto">
         <ModalAction
           id={member?.id}

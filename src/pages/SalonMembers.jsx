@@ -7,6 +7,12 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Table,
   TableBody,
@@ -15,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EllipsisVertical } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -87,18 +94,51 @@ export default function SalonMembers() {
           <TableRow>
             <TableHead className="w-[100px]">Nom</TableHead>
             <TableHead>Code d'accès</TableHead>
+            <TableHead className="w-[100px]"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {members.map((member) => (
-            <TableRow
-              key={member.id}
-              onClick={() => navigate(`/salon/members/${member.id}`)}
-            >
+            <TableRow key={member.id}>
               <TableCell className="font-medium">
                 {member.firstName} {member.lastName}
               </TableCell>
               <TableCell>{member.accessCode}</TableCell>
+              <TableCell className="text-right">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" className="ml-4">
+                      <EllipsisVertical />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    className="w-fit flex flex-col gap-2"
+                  >
+                    <Link
+                      to={`/salon/members/${member.id}/informations`}
+                      asChild
+                    >
+                      <Button className="w-full" variant="outline">
+                        Informations
+                      </Button>
+                    </Link>
+                    <Link
+                      to={`/salon/members/${member.id}/availabilities`}
+                      asChild
+                    >
+                      <Button className="w-full" variant="outline">
+                        Disponibilités
+                      </Button>
+                    </Link>
+                    <Link to={`/salon/members/${member.id}/services`} asChild>
+                      <Button className="w-full" variant="outline">
+                        Prestations
+                      </Button>
+                    </Link>
+                  </PopoverContent>
+                </Popover>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
