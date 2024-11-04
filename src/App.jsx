@@ -120,7 +120,7 @@ export default function App() {
                 path="salon/members/:id/availabilities"
                 element={
                   <Suspense fallback={<PageLoader />}>
-                    <MemberInformations />
+                    <SalonAvailabilities />
                   </Suspense>
                 }
               />
@@ -128,7 +128,7 @@ export default function App() {
                 path="salon/members/:id/services"
                 element={
                   <Suspense fallback={<PageLoader />}>
-                    <MemberInformations />
+                    <SalonServices />
                   </Suspense>
                 }
               />

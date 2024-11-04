@@ -14,7 +14,7 @@ import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import { Loader2, MinusCircle } from "lucide-react";
 import { DateTime } from "luxon";
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 
 const SalonAvailabilities = () => {
   const daysOfWeek = {
@@ -28,6 +28,7 @@ const SalonAvailabilities = () => {
   };
 
   const [availabilities, setAvailabilities] = useState();
+  const [member, setMember] = useState();
   const [specialAvailabilities, setSpecialAvailabilities] = useState();
   const [error, setError] = useState();
   const [loading, setLoading] = useState(true);
@@ -35,14 +36,19 @@ const SalonAvailabilities = () => {
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
   const location = useLocation();
+  const { id } = useParams();
 
   useEffect(() => {
+    if (id) getMember();
     getAvailabilities();
   }, []);
 
   async function getAvailabilities() {
+    const GET_URL = id
+      ? `/api/availabilities/member/${id}`
+      : "/api/availabilities";
     try {
-      const response = await axiosPrivate.get("/api/availabilities");
+      const response = await axiosPrivate.get(GET_URL);
       setAvailabilities(formatAvailabilities(response.data.availabilities));
       setSpecialAvailabilities(response.data.specialAvailabilities);
     } catch (error) {
@@ -54,6 +60,18 @@ const SalonAvailabilities = () => {
     setLoading(false);
   }
 
+  async function getMember() {
+    try {
+      const { data } = await axiosPrivate.get(`/api/salon/members/${id}`);
+      setMember(data);
+    } catch (error) {
+      console.error(error);
+      if (error.response?.status === 401) {
+        navigate("/login", { state: { from: location }, replace: true });
+      }
+    }
+  }
+
   function formatDate(date) {
     const formattedDate = DateTime.fromISO(date)
       .setLocale("fr")
@@ -63,13 +81,17 @@ const SalonAvailabilities = () => {
   }
 
   async function createAvailability(availability) {
-    await axiosPrivate.post("/api/availabilities", availability);
+    const CREATE_URL = id ? `/api/availabilities/member/${id}` : "/api/availabilities";
+    await axiosPrivate.post(CREATE_URL, availability);
     getAvailabilities();
   }
 
   async function createSpecialAvailability(availability) {
-    const res = await axiosPrivate.post(
-      "/api/availabilities/special",
+    const CREATE_URL = id
+      ? `/api/availabilities/special/member/${id}`
+      : "/api/availabilities/special";
+    await axiosPrivate.post(
+      CREATE_URL,
       availability
     );
     getAvailabilities();
@@ -122,15 +144,31 @@ const SalonAvailabilities = () => {
               <Link to="/salon">Salon</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
+          {id && (
+            <>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/salon/members">
+                    {member?.firstName} {member?.lastName}
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+            </>
+          )}
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to="/salon/availabilities">Disponibilités</Link>
+              <Link to={`/salon/member/${id}/availabilities`}>
+                Disponibilités
+              </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <h1 className="text-3xl font-semibold">Mes disponibilités</h1>
+      <h1 className="text-3xl font-semibold">
+        {id ? `${member?.firstName} ${member?.lastName}` : "Mes disponibilités"}
+      </h1>
       <Tabs defaultValue="weekly" className="space-y-4">
         <TabsList>
           <TabsTrigger value="weekly">Par semaine</TabsTrigger>
@@ -148,6 +186,7 @@ const SalonAvailabilities = () => {
                 availabilities={availabilities && availabilities[dayEN]}
                 createAvailability={createAvailability}
                 removeAvailability={removeAvailability}
+                memberId={id}
               />
               {i !== Object.entries(daysOfWeek).length - 1 && (
                 <div className="divider w-1/2 mx-auto" />
@@ -218,6 +257,7 @@ const DailyAvailability = ({
   availabilities,
   createAvailability,
   removeAvailability,
+  memberId,
 }) => {
   return (
     <section
@@ -260,7 +300,7 @@ const DailyAvailability = ({
           })}
         </div>
       ) : (
-        <div className="sm:flex-2">Fermé</div>
+        <div className="sm:flex-2">{!memberId ? "Fermé" : "Horaires du salon"}</div>
       )}
       <div className="flex sm:flex-1 justify-end">
         <ModalAddAvailability
