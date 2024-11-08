@@ -81,7 +81,9 @@ const SalonAvailabilities = () => {
   }
 
   async function createAvailability(availability) {
-    const CREATE_URL = id ? `/api/availabilities/member/${id}` : "/api/availabilities";
+    const CREATE_URL = id
+      ? `/api/availabilities/member/${id}`
+      : "/api/availabilities";
     await axiosPrivate.post(CREATE_URL, availability);
     getAvailabilities();
   }
@@ -90,10 +92,7 @@ const SalonAvailabilities = () => {
     const CREATE_URL = id
       ? `/api/availabilities/special/member/${id}`
       : "/api/availabilities/special";
-    await axiosPrivate.post(
-      CREATE_URL,
-      availability
-    );
+    await axiosPrivate.post(CREATE_URL, availability);
     getAvailabilities();
   }
 
@@ -159,15 +158,13 @@ const SalonAvailabilities = () => {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to={`/salon/member/${id}/availabilities`}>
-                Disponibilités
-              </Link>
+              <Link to={`/salon/member/${id}/availabilities`}>Horaires</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <h1 className="text-3xl font-semibold">
-        {id ? `${member?.firstName} ${member?.lastName}` : "Mes disponibilités"}
+        {id ? `${member?.firstName} ${member?.lastName}` : "Mes horaires"}
       </h1>
       <Tabs defaultValue="weekly" className="space-y-4">
         <TabsList>
@@ -186,7 +183,7 @@ const SalonAvailabilities = () => {
                 availabilities={availabilities && availabilities[dayEN]}
                 createAvailability={createAvailability}
                 removeAvailability={removeAvailability}
-                memberId={id}
+                member={member}
               />
               {i !== Object.entries(daysOfWeek).length - 1 && (
                 <div className="divider w-1/2 mx-auto" />
@@ -257,8 +254,57 @@ const DailyAvailability = ({
   availabilities,
   createAvailability,
   removeAvailability,
-  memberId,
+  member,
 }) => {
+  function parseTimeString(time) {
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours * 60 + minutes;
+  }
+
+  function formatTimeString(minutes) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours.toString().padStart(2, "0")}:${mins
+      .toString()
+      .padStart(2, "0")}`;
+  }
+
+  const overallAvailability = (availabilities) => {
+    if (!availabilities) return;
+    const timeSlots = availabilities.map(({ start, end }) => ({
+      start: parseTimeString(start),
+      end: parseTimeString(end),
+    }));
+
+    timeSlots.sort((a, b) => a.start - b.start);
+
+    const mergedSlots = [];
+    let currentStart = timeSlots[0].start;
+    let currentEnd = timeSlots[0].end;
+
+    for (let i = 1; i < timeSlots.length; i++) {
+      const slot = timeSlots[i];
+
+      if (slot.start <= currentEnd) {
+        currentEnd = Math.max(currentEnd, slot.end);
+      } else {
+        mergedSlots.push({ start: currentStart, end: currentEnd });
+        currentStart = slot.start;
+        currentEnd = slot.end;
+      }
+    }
+    mergedSlots.push({ start: currentStart, end: currentEnd });
+
+    return mergedSlots.map((slot) => ({
+      start: formatTimeString(slot.start),
+      end: formatTimeString(slot.end),
+    }));
+  };
+
+  const availabilitiesToDisplay = member
+    ? availabilities
+    : overallAvailability(availabilities);
+
   return (
     <section
       className={`flex flex-col sm:flex-row gap-4 ${
@@ -268,7 +314,7 @@ const DailyAvailability = ({
       <span className="text-xl font-medium sm:flex-1">{dayFR}</span>
       {availabilities?.length ? (
         <div className="space-y-2 sm:flex-2">
-          {availabilities?.map(({ id, start, end }, i) => {
+          {availabilitiesToDisplay?.map(({ id, start, end }) => {
             return (
               <div key={id} className="flex gap-4">
                 <Input
@@ -284,29 +330,33 @@ const DailyAvailability = ({
                   defaultValue={end}
                   className="!opacity-100 w-min"
                 />
-                <ModalAction
-                  id={id}
-                  action={removeAvailability}
-                  actionLabel="Supprimer"
-                  variant="destructive"
-                  title="Supprimer un créneau"
-                  description="Êtes-vous sûr de vouloir supprimer ce créneau de disponibilité ?"
-                  successMessage={"Créneau supprimé"}
-                  trigger={<MinusCircle className="text-destructive" />}
-                  triggerVariant="ghost"
-                />
+                {member && (
+                  <ModalAction
+                    id={id}
+                    action={removeAvailability}
+                    actionLabel="Supprimer"
+                    variant="destructive"
+                    title="Supprimer un créneau"
+                    description="Êtes-vous sûr de vouloir supprimer ce créneau de disponibilité ?"
+                    successMessage={"Créneau supprimé"}
+                    trigger={<MinusCircle className="text-destructive" />}
+                    triggerVariant="ghost"
+                  />
+                )}
               </div>
             );
           })}
         </div>
       ) : (
-        <div className="sm:flex-2">{!memberId ? "Fermé" : "Horaires du salon"}</div>
+        <div className="sm:flex-2">{!member ? "Fermé" : "Repos"}</div>
       )}
       <div className="flex sm:flex-1 justify-end">
-        <ModalAddAvailability
-          dayOfWeek={dayEN}
-          createAvailability={createAvailability}
-        />
+        {member && (
+          <ModalAddAvailability
+            dayOfWeek={dayEN}
+            createAvailability={createAvailability}
+          />
+        )}
       </div>
     </section>
   );
