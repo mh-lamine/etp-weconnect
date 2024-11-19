@@ -239,6 +239,7 @@ const SalonServices = () => {
                                   align="end"
                                   className="w-fit flex flex-col gap-2"
                                 >
+                                  {/* //TODO: Add modal to assign service to members */}
                                   <ModalUpdateService
                                     prevService={service}
                                     updateService={updateService}
