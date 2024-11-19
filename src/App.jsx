@@ -23,6 +23,7 @@ const SalonAvailabilities = lazy(() => import("./pages/SalonAvailabilities"));
 const SalonServices = lazy(() => import("./pages/SalonServices"));
 const SalonMembers = lazy(() => import("./pages/SalonMembers"));
 const MemberInformations = lazy(() => import("./pages/MemberInformations"));
+const MemberServices = lazy(() => import("./pages/MemberServices"));
 
 export default function App() {
   const { setAuth } = useAuth();
@@ -128,7 +129,7 @@ export default function App() {
                 path="salon/members/:id/services"
                 element={
                   <Suspense fallback={<PageLoader />}>
-                    <SalonServices />
+                    <MemberServices />
                   </Suspense>
                 }
               />

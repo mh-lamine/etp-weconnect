@@ -314,38 +314,36 @@ const DailyAvailability = ({
       <span className="text-xl font-medium sm:flex-1">{dayFR}</span>
       {availabilities?.length ? (
         <div className="space-y-2 sm:flex-2">
-          {availabilitiesToDisplay?.map(({ id, start, end }) => {
-            return (
-              <div key={id} className="flex gap-4">
-                <Input
-                  disabled
-                  type="time"
-                  defaultValue={start}
-                  className="!opacity-100 w-min"
+          {availabilitiesToDisplay?.map(({ id, start, end }) => (
+            <div key={id} className="flex gap-4">
+              <Input
+                disabled
+                type="time"
+                defaultValue={start}
+                className="!opacity-100 w-min"
+              />
+              <div className="divider divider-horizontal m-0"></div>
+              <Input
+                disabled
+                type="time"
+                defaultValue={end}
+                className="!opacity-100 w-min"
+              />
+              {member && (
+                <ModalAction
+                  id={id}
+                  action={removeAvailability}
+                  actionLabel="Supprimer"
+                  variant="destructive"
+                  title="Supprimer un créneau"
+                  description="Êtes-vous sûr de vouloir supprimer ce créneau de disponibilité ?"
+                  successMessage={"Créneau supprimé"}
+                  trigger={<MinusCircle className="text-destructive" />}
+                  triggerVariant="ghost"
                 />
-                <div className="divider divider-horizontal m-0"></div>
-                <Input
-                  disabled
-                  type="time"
-                  defaultValue={end}
-                  className="!opacity-100 w-min"
-                />
-                {member && (
-                  <ModalAction
-                    id={id}
-                    action={removeAvailability}
-                    actionLabel="Supprimer"
-                    variant="destructive"
-                    title="Supprimer un créneau"
-                    description="Êtes-vous sûr de vouloir supprimer ce créneau de disponibilité ?"
-                    successMessage={"Créneau supprimé"}
-                    trigger={<MinusCircle className="text-destructive" />}
-                    triggerVariant="ghost"
-                  />
-                )}
-              </div>
-            );
-          })}
+              )}
+            </div>
+          ))}
         </div>
       ) : (
         <div className="sm:flex-2">{!member ? "Fermé" : "Repos"}</div>
