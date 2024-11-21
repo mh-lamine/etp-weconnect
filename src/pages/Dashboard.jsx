@@ -5,9 +5,15 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList } from "@/components/ui/breadcrumb";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import useAuth from "@/hooks/useAuth";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import useLogout from "@/hooks/useLogout";
 import { Settings } from "lucide-react";
@@ -16,9 +22,10 @@ import { Link, useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const [appointments, setAppointments] = useState();
-  const [apiLoading, setApiLoading] = useState(true);
+  const [_apiLoading, setApiLoading] = useState(true);
   const logout = useLogout();
 
+  const { auth } = useAuth();
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
 
@@ -98,9 +105,11 @@ export default function Dashboard() {
             <TabsTrigger value="today">Aujourd'hui</TabsTrigger>
             <TabsTrigger value="incoming">À venir</TabsTrigger>
           </TabsList>
-          <Link to="/salon">
-            <Settings size={24} className="text-primary" />
-          </Link>
+          {auth.role === "SALON" && (
+            <Link to="/salon">
+              <Settings size={24} className="text-primary" />
+            </Link>
+          )}
         </div>
         <TabsContent value="today" className="space-y-4">
           {todaysAppointments.length ? (

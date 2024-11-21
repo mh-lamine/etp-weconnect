@@ -1,14 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
-import { handleLogin } from "@/actions/authActions";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { handleLoginMember } from "@/actions/authActions";
 import { Loader2 } from "lucide-react";
 import useAuth from "@/hooks/useAuth";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 
-export default function LoginPage() {
+export default function LoginMember() {
   const { setAuth, persist, setPersist } = useAuth();
   const [credentials, setCredentials] = useState({
     email: "",
@@ -21,7 +26,8 @@ export default function LoginPage() {
   const from = location.state?.from?.pathname || { pathname: "/" };
 
   const handleChange = (e) => {
-    setCredentials({ ...credentials, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setCredentials({ ...credentials, [name]: value });
   };
 
   const togglePersist = () => {
@@ -39,13 +45,13 @@ export default function LoginPage() {
     }
 
     try {
-      const { data } = await handleLogin(credentials);
+      const { data } = await handleLoginMember(credentials);
       setAuth(data);
       navigate(from, { replace: true });
     } catch (error) {
       console.log(error);
       if (error.response.status === 401) {
-        toast.error("Email ou mot de passe incorrect");
+        toast.error("Email ou code d'accès incorrect");
       } else {
         toast.error("Une erreur est survenue, veuillez contacter le support");
       }
@@ -67,12 +73,20 @@ export default function LoginPage() {
           placeholder="Email du salon"
           onChange={handleChange}
         />
-        <Input
-          name="password"
-          type="password"
-          placeholder="Mot de passe"
-          onChange={handleChange}
-        />
+        <InputOTP
+          maxLength={6}
+          onChange={(value) => setCredentials({ ...credentials, password: value })}
+          value={credentials.password || null}
+        >
+          <InputOTPGroup>
+            <InputOTPSlot className="bg-white w-[74px]" index={0} />
+            <InputOTPSlot className="bg-white w-[74px]" index={1} />
+            <InputOTPSlot className="bg-white w-[74px]" index={2} />
+            <InputOTPSlot className="bg-white w-[74px]" index={3} />
+            <InputOTPSlot className="bg-white w-[74px]" index={4} />
+            <InputOTPSlot className="bg-white w-[74px]" index={5} />
+          </InputOTPGroup>
+        </InputOTP>
         <div className="items-top flex items-center pt-2 space-x-2">
           <Checkbox id="terms1" onClick={togglePersist} checked={persist} />
           <div className="grid gap-1.5 leading-none">
@@ -89,7 +103,7 @@ export default function LoginPage() {
         {loading ? <Loader2 className="animate-spin" /> : "Se connecter"}
       </Button>
       <Button variant="link" className="py-0">
-        <Link to={"/loginMember"}>Se connecter en tant que membre</Link>
+        <Link to={"/login"}>Se connecter en tant qu'admin</Link>
       </Button>
     </div>
   );

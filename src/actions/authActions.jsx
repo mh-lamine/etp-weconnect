@@ -7,3 +7,9 @@ export async function handleLogin(data) {
     withCredentials: true,
   });
 }
+export async function handleLoginMember(data) {
+  return await axios.post(API.LOGIN_MEMBER_URL, data, {
+    headers: { "Content-Type": "application/json" },
+    withCredentials: true,
+  });
+}

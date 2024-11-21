@@ -15,6 +15,8 @@ import ErrorPage from "./pages/ErrorPage";
 import logo from "/weconnect-no-bg.svg";
 import { Toaster } from "sonner";
 import { AlertCircle, CheckCircle } from "lucide-react";
+import RequireAdmin from "./components/RequireAdmin";
+import LoginMember from "./pages/LoginMember";
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Salon = lazy(() => import("./pages/Salon"));
@@ -55,6 +57,7 @@ export default function App() {
         {/* auth routes */}
         <Route element={<AuthLayout />}>
           <Route path="login" element={<LoginPage />} />
+          <Route path="loginMember" element={<LoginMember />} />
         </Route>
 
         {/* protected routes */}
@@ -69,70 +72,72 @@ export default function App() {
                   </Suspense>
                 }
               />
-              <Route
-                path="salon"
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <Salon />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="salon/informations"
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <SalonInformations />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="salon/availabilities"
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <SalonAvailabilities />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="salon/services"
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <SalonServices />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="salon/members"
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <SalonMembers />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="salon/members/:id/informations"
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <MemberInformations />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="salon/members/:id/availabilities"
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <SalonAvailabilities />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="salon/members/:id/services"
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <MemberServices />
-                  </Suspense>
-                }
-              />
+              <Route element={<RequireAdmin />}>
+                <Route
+                  path="salon"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <Salon />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="salon/informations"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <SalonInformations />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="salon/availabilities"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <SalonAvailabilities />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="salon/services"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <SalonServices />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="salon/members"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <SalonMembers />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="salon/members/:id/informations"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <MemberInformations />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="salon/members/:id/availabilities"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <SalonAvailabilities />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="salon/members/:id/services"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <MemberServices />
+                    </Suspense>
+                  }
+                />
+              </Route>
             </Route>
           </Route>
         </Route>
