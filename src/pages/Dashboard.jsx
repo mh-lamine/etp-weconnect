@@ -5,6 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -16,27 +17,35 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useAuth from "@/hooks/useAuth";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import useLogout from "@/hooks/useLogout";
+import { cn } from "@/lib/utils";
+import { getInitials } from "@/utils/formatting";
 import { Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const [appointments, setAppointments] = useState();
-  const [_apiLoading, setApiLoading] = useState(true);
+  const [apiLoading, setApiLoading] = useState(true);
+  const [members, setMembers] = useState();
+  const [memberToSort, setMemberToSort] = useState();
   const logout = useLogout();
 
   const { auth } = useAuth();
+  const isAdmin = auth?.role === "SALON";
+
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
 
   async function getAppointmentsAsProvider() {
+    const GET_URL = isAdmin
+      ? "/api/appointments/provider"
+      : "/api/appointments/member";
+
     try {
-      const response = await axiosPrivate.get("/api/appointments/provider");
-      setAppointments(response.data);
+      const { data } = await axiosPrivate.get(GET_URL);
+      setAppointments(data);
     } catch (error) {
       console.error(error);
-    } finally {
-      setApiLoading(false);
     }
   }
 
@@ -64,7 +73,11 @@ export default function Dashboard() {
 
   const filterAndSortAppointments = (appointments, status) => {
     return appointments
-      .filter((appointment) => appointment.status === status)
+      .filter(
+        (appointment) =>
+          appointment.status === status &&
+          (!memberToSort || appointment.memberId === memberToSort)
+      )
       .sort((a, b) => new Date(a.date) - new Date(b.date));
   };
 
@@ -74,11 +87,25 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    getAppointmentsAsProvider();
+    async function init() {
+      try {
+        const { data } = await axiosPrivate.get("/api/salon/members");
+        setMembers(data);
+      } catch (error) {
+        console.error(error);
+      }
+      getAppointmentsAsProvider();
+      setApiLoading(false);
+    }
+    init();
   }, []);
 
   const todaysAppointments = appointments?.todaysAppointments || [];
   const futureAppointments = appointments?.futureAppointments || [];
+
+  if (apiLoading) {
+    return <p>Chargement...</p>;
+  }
 
   return (
     <main className="w-full h-full max-w-screen-md mx-auto p-6 flex flex-1 flex-col gap-4">
@@ -105,13 +132,43 @@ export default function Dashboard() {
             <TabsTrigger value="today">Aujourd'hui</TabsTrigger>
             <TabsTrigger value="incoming">À venir</TabsTrigger>
           </TabsList>
-          {auth.role === "SALON" && (
+          {isAdmin && (
             <Link to="/salon">
               <Settings size={24} className="text-primary" />
             </Link>
           )}
         </div>
         <TabsContent value="today" className="space-y-4">
+          {isAdmin && (
+            <div className="-space-x-4">
+              {members?.map((member, i) => (
+                <button
+                  className={`z-[${i}]`}
+                  onClick={
+                    memberToSort == member.id
+                      ? () => setMemberToSort(null)
+                      : () => setMemberToSort(member.id)
+                  }
+                >
+                  <Avatar
+                    className={cn(
+                      "w-12",
+                      "h-12",
+                      "border-2",
+                      memberToSort == member.id
+                        ? "border-primary"
+                        : "border-white"
+                    )}
+                  >
+                    <AvatarImage src={member.profilePicture} />
+                    <AvatarFallback className="text-md">
+                      {getInitials(member.firstName, member.lastName)}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              ))}
+            </div>
+          )}
           {todaysAppointments.length ? (
             <>
               <p className="text-muted">
@@ -124,6 +181,7 @@ export default function Dashboard() {
                     appointment={appointment}
                     cancelAppointment={cancelAppointment}
                     today={true}
+                    isAdmin={isAdmin}
                   />
                 )
               )}
@@ -137,6 +195,7 @@ export default function Dashboard() {
                     appointment={appointment}
                     past={true}
                     today={true}
+                    isAdmin={isAdmin}
                   />
                 )
               )}
@@ -154,7 +213,7 @@ export default function Dashboard() {
               type="single"
               collapsible
               defaultValue={"item-0"}
-              className="w-full"
+              className="w-full space-y-4"
             >
               <AccordionItem value={`item-0`}>
                 <AccordionTrigger>
@@ -176,6 +235,7 @@ export default function Dashboard() {
                         appointment={appointment}
                         acceptAppointment={acceptAppointment}
                         cancelAppointment={cancelAppointment}
+                        isAdmin={isAdmin}
                       />
                     )
                   )}
@@ -203,6 +263,7 @@ export default function Dashboard() {
                       appointment={appointment}
                       acceptAppointment={acceptAppointment}
                       cancelAppointment={cancelAppointment}
+                      isAdmin={isAdmin}
                     />
                   ))}
                 </AccordionContent>

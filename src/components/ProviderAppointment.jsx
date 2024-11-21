@@ -1,6 +1,8 @@
 import ModalAction from "./modal/ModalAction";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import ModalClientInfo from "./modal/ModalClientInfo";
 
 const ProviderAppointment = ({
   appointment,
@@ -8,13 +10,23 @@ const ProviderAppointment = ({
   cancelAppointment,
   today = false,
   past = false,
+  isAdmin = false,
 }) => {
   return (
     <div className={`flex flex-col gap-2 py-2 ${past && "text-muted"}`}>
       <div className="divider divider-start my-0">
-        <h2 className="text-xl font-semibold">
-          {appointment.client.firstName} {appointment.client.lastName}
-        </h2>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="link" className="text-dark">
+              <h2 className="text-xl font-semibold">
+                {appointment.client.firstName} {appointment.client.lastName}
+              </h2>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-fit flex flex-col gap-2">
+            <ModalClientInfo client={appointment.client} />
+          </PopoverContent>
+        </Popover>
       </div>
       <div className="flex flex-col md:flex-row md:gap-4">
         <Button variant="link" className={`w-fit py-0 ${past && "text-muted"}`}>
@@ -65,7 +77,7 @@ const ProviderAppointment = ({
           Annulé
         </Badge>
       )}
-      {appointment.status === "PENDING" && (
+      {isAdmin && appointment.status === "PENDING" && (
         <div className="flex justify-between">
           <ModalAction
             id={appointment.id}
@@ -89,7 +101,7 @@ const ProviderAppointment = ({
           />
         </div>
       )}
-      {appointment.status === "ACCEPTED" && (
+      {isAdmin && appointment.status === "ACCEPTED" && (
         <div className="ml-auto">
           <ModalAction
             id={appointment.id}
