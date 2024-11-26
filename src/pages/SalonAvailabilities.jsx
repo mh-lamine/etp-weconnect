@@ -208,14 +208,17 @@ const SalonAvailabilities = () => {
           <p className="text-muted pb-4">
             Définissez des horaires spéciales pour des jours précis.
           </p>
-          <div className="flex flex-wrap gap-4">
+
+          {id ? (
             <ModalAddSpecialAvailability
               createSpecialAvailability={createSpecialAvailability}
             />
+          ) : (
             <ModalAddUnavailability
               createUnavailability={createUnavailability}
             />
-          </div>
+          )}
+
           {specialAvailabilities?.length ? (
             specialAvailabilities.map(({ id, date, startTime, endTime }) => (
               <div
@@ -258,51 +261,54 @@ const SalonAvailabilities = () => {
           ) : (
             <p className="text-muted pt-4">Aucune disponibilité spéciale</p>
           )}
-          {unavailabilities?.length ? (
-            <>
-              <div className="divider divider-start text-muted">Indisponibilités</div>
-              {unavailabilities.map(({ id, date, startTime, endTime }) => (
-                <div
-                  key={id}
-                  className="flex flex-col sm:flex-row sm:items-center gap-4 pt-4"
-                >
-                  <span className="flex-1 text-xl font-medium">
-                    {formatDate(date)}
-                  </span>
-                  <div className="flex flex-1 gap-2">
-                    <div className="flex items-center justify-center">
-                      <Input
-                        disabled
-                        type="time"
-                        defaultValue={startTime}
-                        className="!opacity-100 w-min"
-                      />
-                      <div className="divider divider-horizontal m-0"></div>
-                      <Input
-                        disabled
-                        type="time"
-                        defaultValue={endTime}
-                        className="!opacity-100 w-min"
+          {!id &&
+            (unavailabilities?.length ? (
+              <>
+                <div className="divider divider-start text-muted">
+                  Indisponibilités
+                </div>
+                {unavailabilities.map(({ id, date, startTime, endTime }) => (
+                  <div
+                    key={id}
+                    className="flex flex-col sm:flex-row sm:items-center gap-4 pt-4"
+                  >
+                    <span className="flex-1 text-xl font-medium">
+                      {formatDate(date)}
+                    </span>
+                    <div className="flex flex-1 gap-2">
+                      <div className="flex items-center justify-center">
+                        <Input
+                          disabled
+                          type="time"
+                          defaultValue={startTime}
+                          className="!opacity-100 w-min"
+                        />
+                        <div className="divider divider-horizontal m-0"></div>
+                        <Input
+                          disabled
+                          type="time"
+                          defaultValue={endTime}
+                          className="!opacity-100 w-min"
+                        />
+                      </div>
+                      <ModalAction
+                        id={id}
+                        action={removeUnavailability}
+                        actionLabel="Supprimer"
+                        variant="destructive"
+                        title="Supprimer une indisponibilité"
+                        description="Êtes-vous sûr de vouloir supprimer cette indisponibilité ?"
+                        successMessage={"Indisponibilité supprimée"}
+                        trigger={<MinusCircle className="text-destructive" />}
+                        triggerVariant="ghost"
                       />
                     </div>
-                    <ModalAction
-                      id={id}
-                      action={removeUnavailability}
-                      actionLabel="Supprimer"
-                      variant="destructive"
-                      title="Supprimer une indisponibilité"
-                      description="Êtes-vous sûr de vouloir supprimer cette indisponibilité ?"
-                      successMessage={"Indisponibilité supprimée"}
-                      trigger={<MinusCircle className="text-destructive" />}
-                      triggerVariant="ghost"
-                    />
                   </div>
-                </div>
-              ))}
-            </>
-          ) : (
-            <p className="text-muted pt-4">Aucune indisponibilité</p>
-          )}
+                ))}
+              </>
+            ) : (
+              <p className="text-muted pt-4">Aucune indisponibilité</p>
+            ))}
         </TabsContent>
       </Tabs>
     </main>
