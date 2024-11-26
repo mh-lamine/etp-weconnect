@@ -1,6 +1,7 @@
 import ModalAction from "@/components/modal/ModalAction";
 import ModalAddAvailability from "@/components/modal/ModalAddAvailability";
 import ModalAddSpecialAvailability from "@/components/modal/ModalAddSpecialAvailability";
+import ModalAddUnavailability from "@/components/modal/ModalAddUnavailability";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -30,6 +31,7 @@ const SalonAvailabilities = () => {
   const [availabilities, setAvailabilities] = useState();
   const [member, setMember] = useState();
   const [specialAvailabilities, setSpecialAvailabilities] = useState();
+  const [unavailabilities, setUnavailabilities] = useState();
   const [error, setError] = useState();
   const [loading, setLoading] = useState(true);
 
@@ -51,6 +53,7 @@ const SalonAvailabilities = () => {
       const response = await axiosPrivate.get(GET_URL);
       setAvailabilities(formatAvailabilities(response.data.availabilities));
       setSpecialAvailabilities(response.data.specialAvailabilities);
+      setUnavailabilities(response.data.unavailabilities);
     } catch (error) {
       setError(error);
       if (error.response?.status === 401) {
@@ -96,6 +99,11 @@ const SalonAvailabilities = () => {
     getAvailabilities();
   }
 
+  async function createUnavailability(availability) {
+    await axiosPrivate.post("/api/availabilities/unavailability", availability);
+    getAvailabilities();
+  }
+
   async function removeAvailability(id) {
     await axiosPrivate.delete(`/api/availabilities/${id}`);
     getAvailabilities();
@@ -103,6 +111,11 @@ const SalonAvailabilities = () => {
 
   async function removeSpecialAvailability(id) {
     await axiosPrivate.delete(`/api/availabilities/special/${id}`);
+    getAvailabilities();
+  }
+
+  async function removeUnavailability(id) {
+    await axiosPrivate.delete(`/api/availabilities/unavailability/${id}`);
     getAvailabilities();
   }
 
@@ -195,9 +208,14 @@ const SalonAvailabilities = () => {
           <p className="text-muted pb-4">
             Définissez des horaires spéciales pour des jours précis.
           </p>
-          <ModalAddSpecialAvailability
-            createSpecialAvailability={createSpecialAvailability}
-          />
+          <div className="flex flex-wrap gap-4">
+            <ModalAddSpecialAvailability
+              createSpecialAvailability={createSpecialAvailability}
+            />
+            <ModalAddUnavailability
+              createUnavailability={createUnavailability}
+            />
+          </div>
           {specialAvailabilities?.length ? (
             specialAvailabilities.map(({ id, date, startTime, endTime }) => (
               <div
@@ -238,7 +256,52 @@ const SalonAvailabilities = () => {
               </div>
             ))
           ) : (
-            <p className="text-muted">Aucune disponibilité spéciale</p>
+            <p className="text-muted pt-4">Aucune disponibilité spéciale</p>
+          )}
+          {unavailabilities?.length ? (
+            <>
+              <div className="divider divider-start text-muted">Indisponibilités</div>
+              {unavailabilities.map(({ id, date, startTime, endTime }) => (
+                <div
+                  key={id}
+                  className="flex flex-col sm:flex-row sm:items-center gap-4 pt-4"
+                >
+                  <span className="flex-1 text-xl font-medium">
+                    {formatDate(date)}
+                  </span>
+                  <div className="flex flex-1 gap-2">
+                    <div className="flex items-center justify-center">
+                      <Input
+                        disabled
+                        type="time"
+                        defaultValue={startTime}
+                        className="!opacity-100 w-min"
+                      />
+                      <div className="divider divider-horizontal m-0"></div>
+                      <Input
+                        disabled
+                        type="time"
+                        defaultValue={endTime}
+                        className="!opacity-100 w-min"
+                      />
+                    </div>
+                    <ModalAction
+                      id={id}
+                      action={removeUnavailability}
+                      actionLabel="Supprimer"
+                      variant="destructive"
+                      title="Supprimer une indisponibilité"
+                      description="Êtes-vous sûr de vouloir supprimer cette indisponibilité ?"
+                      successMessage={"Indisponibilité supprimée"}
+                      trigger={<MinusCircle className="text-destructive" />}
+                      triggerVariant="ghost"
+                    />
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : (
+            <p className="text-muted pt-4">Aucune indisponibilité</p>
           )}
         </TabsContent>
       </Tabs>

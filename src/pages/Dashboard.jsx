@@ -13,6 +13,7 @@ import {
   BreadcrumbList,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useAuth from "@/hooks/useAuth";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
@@ -91,21 +92,18 @@ export default function Dashboard() {
       try {
         const { data } = await axiosPrivate.get("/api/salon/members");
         setMembers(data);
+        await getAppointmentsAsProvider();
       } catch (error) {
         console.error(error);
+      } finally {
+        setApiLoading(false);
       }
-      getAppointmentsAsProvider();
-      setApiLoading(false);
     }
     init();
   }, []);
 
   const todaysAppointments = appointments?.todaysAppointments || [];
   const futureAppointments = appointments?.futureAppointments || [];
-
-  if (apiLoading) {
-    return <p>Chargement...</p>;
-  }
 
   return (
     <main className="w-full h-full max-w-screen-md mx-auto p-6 flex flex-1 flex-col gap-4">
@@ -139,37 +137,42 @@ export default function Dashboard() {
           )}
         </div>
         <TabsContent value="today" className="space-y-4">
-          {isAdmin && (
-            <div className="-space-x-4">
-              {members?.map((member, i) => (
-                <button
-                  className={`z-[${i}]`}
-                  onClick={
-                    memberToSort == member.id
-                      ? () => setMemberToSort(null)
-                      : () => setMemberToSort(member.id)
-                  }
-                >
-                  <Avatar
-                    className={cn(
-                      "w-12",
-                      "h-12",
-                      "border-2",
+          {isAdmin &&
+            (apiLoading ? (
+              <MemberAvatarSkeleton />
+            ) : (
+              <div className="-space-x-4">
+                {members?.map((member, i) => (
+                  <button
+                    className={`z-[${i}]`}
+                    onClick={
                       memberToSort == member.id
-                        ? "border-primary"
-                        : "border-white"
-                    )}
+                        ? () => setMemberToSort(null)
+                        : () => setMemberToSort(member.id)
+                    }
                   >
-                    <AvatarImage src={member.profilePicture} />
-                    <AvatarFallback className="text-md">
-                      {getInitials(member.firstName, member.lastName)}
-                    </AvatarFallback>
-                  </Avatar>
-                </button>
-              ))}
-            </div>
-          )}
-          {todaysAppointments.length ? (
+                    <Avatar
+                      className={cn(
+                        "w-12",
+                        "h-12",
+                        "border-2",
+                        memberToSort == member.id
+                          ? "border-primary"
+                          : "border-white"
+                      )}
+                    >
+                      <AvatarImage src={member.profilePicture} />
+                      <AvatarFallback className="text-md">
+                        {getInitials(member.firstName, member.lastName)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                ))}
+              </div>
+            ))}
+          {apiLoading ? (
+            <TodaysAppointmentSkeleton />
+          ) : todaysAppointments.length ? (
             <>
               <p className="text-muted">
                 Vous avez {todaysAppointments.length} rendez-vous aujourd'hui.
@@ -208,7 +211,9 @@ export default function Dashboard() {
           )}
         </TabsContent>
         <TabsContent value="incoming">
-          {futureAppointments.length ? (
+          {apiLoading ? (
+            <p>Fetching</p>
+          ) : futureAppointments.length ? (
             <Accordion
               type="single"
               collapsible
@@ -284,3 +289,43 @@ export default function Dashboard() {
     </main>
   );
 }
+
+const MemberAvatarSkeleton = () => (
+  <div className="flex -space-x-4">
+    <Skeleton className="h-12 w-12 rounded-full border-2 animate-pulse" />
+    <Skeleton className="h-12 w-12 rounded-full border-2 animate-pulse" />
+    <Skeleton className="h-12 w-12 rounded-full border-2 animate-pulse" />
+  </div>
+);
+
+const TodaysAppointmentSkeleton = () => (
+  <div className="space-y-8">
+    <Skeleton className="h-4 w-2/3" />
+    <div className="flex items-center gap-2">
+      <Skeleton className="h-4 w-1/4" />
+      <Skeleton className="h-1 w-3/4" />
+    </div>
+    <div className="space-y-4">
+      <Skeleton className="h-4 w-1/3" />
+      <Skeleton className="h-4 w-1/3" />
+      <Skeleton className="h-6 w-1/2 rounded-xl" />
+    </div>
+    <div className="flex items-center justify-between">
+      <Skeleton className="h-10 w-24 rounded-sm" />
+      <Skeleton className="h-10 w-24 rounded-sm" />
+    </div>
+    <div className="flex items-center gap-2">
+      <Skeleton className="h-4 w-1/4" />
+      <Skeleton className="h-1 w-3/4" />
+    </div>
+    <div className="space-y-4">
+      <Skeleton className="h-4 w-1/3" />
+      <Skeleton className="h-4 w-1/3" />
+      <Skeleton className="h-6 w-1/2 rounded-xl" />
+    </div>
+    <div className="flex items-center justify-between">
+      <Skeleton className="h-10 w-24 rounded-sm" />
+      <Skeleton className="h-10 w-24 rounded-sm" />
+    </div>
+  </div>
+);

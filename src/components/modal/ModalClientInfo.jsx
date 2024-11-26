@@ -32,13 +32,21 @@ const ModalClientInfo = ({ client }) => {
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle className="text-primary">
-              Fiche client de {firstName} {lastName}
+            <DialogTitle className="flex text-xl">
+              Fiche client de&nbsp;
+              <p className="text-primary">
+                {firstName} {lastName}
+              </p>
             </DialogTitle>
           </DialogHeader>
-          <ul>
+          <ul className="font-light">
             <li>
-              <b>Numéro de téléphone:</b> {phoneNumber}
+              <b>Numéro de téléphone:</b>{" "}
+              <Button variant="link">
+                <a href={`tel:${phoneNumber}`}>
+                  {phoneNumber.replace(/(\d{2})(?=\d)/g, "$1 ")}
+                </a>
+              </Button>
             </li>
           </ul>
         </DialogContent>
