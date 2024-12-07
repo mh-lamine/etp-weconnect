@@ -145,16 +145,59 @@ const ModalAssignServices = ({ categories, assignServices, member }) => {
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button variant="outline">Ajouter une prestation</Button>
+        <Button variant="link">Assigner des prestations</Button>
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle>Ajouter une prestation</DrawerTitle>
+          <DrawerTitle>
+            Assigner des prestations à {firstName} {lastName}
+          </DrawerTitle>
           <DrawerDescription>
-            Définissez un nom, un prix et une durée pour ajouter une prestation.
+            Sélectionnez une catégorie et ajoutez des prestations pour votre
+            membre.
           </DrawerDescription>
         </DrawerHeader>
-        <div className="flex flex-col px-4 gap-2"></div>
+        <div className="px-4 pb-2">
+          <Select value={value} onValueChange={setValue}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sélectionner" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.id}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex flex-wrap gap-2 px-4">
+          {value &&
+            categories
+              .find((category) => category.id === value)
+              .services.map((service) => (
+                <Button
+                  key={service.id}
+                  className="w-fit"
+                  variant={
+                    services.find(
+                      (selectedService) => selectedService === service.id
+                    )
+                      ? "default"
+                      : "outline"
+                  }
+                  onClick={() =>
+                    setServices((prev) =>
+                      prev.includes(service.id)
+                        ? prev.filter((id) => id !== service.id)
+                        : [...prev, service.id]
+                    )
+                  }
+                >
+                  {service.name}
+                </Button>
+              ))}
+        </div>
         <DrawerFooter className="pt-2">
           <DrawerClose asChild>
             <div className="space-y-2">

@@ -75,16 +75,18 @@ export default function LoginMember() {
         />
         <InputOTP
           maxLength={6}
-          onChange={(value) => setCredentials({ ...credentials, password: value })}
+          onChange={(value) =>
+            setCredentials({ ...credentials, password: value })
+          }
           value={credentials.password || null}
         >
-          <InputOTPGroup>
-            <InputOTPSlot className="bg-white w-[74px]" index={0} />
-            <InputOTPSlot className="bg-white w-[74px]" index={1} />
-            <InputOTPSlot className="bg-white w-[74px]" index={2} />
-            <InputOTPSlot className="bg-white w-[74px]" index={3} />
-            <InputOTPSlot className="bg-white w-[74px]" index={4} />
-            <InputOTPSlot className="bg-white w-[74px]" index={5} />
+          <InputOTPGroup className="w-full ">
+            <InputOTPSlot className="bg-white w-1/6" index={0} />
+            <InputOTPSlot className="bg-white w-1/6" index={1} />
+            <InputOTPSlot className="bg-white w-1/6" index={2} />
+            <InputOTPSlot className="bg-white w-1/6" index={3} />
+            <InputOTPSlot className="bg-white w-1/6" index={4} />
+            <InputOTPSlot className="bg-white w-1/6" index={5} />
           </InputOTPGroup>
         </InputOTP>
         <div className="items-top flex items-center pt-2 space-x-2">
