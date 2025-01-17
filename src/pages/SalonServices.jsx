@@ -24,6 +24,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import useAuth from "@/hooks/useAuth";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import { convertToHhMm } from "@/utils/formatting";
 import { EllipsisVertical, Loader2 } from "lucide-react";
@@ -38,6 +39,7 @@ const SalonServices = () => {
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
   const location = useLocation();
+  const { auth } = useAuth();
 
   useEffect(() => {
     getCategories();
@@ -59,7 +61,10 @@ const SalonServices = () => {
 
   async function createService(service) {
     try {
-      await axiosPrivate.post("/api/providerService", service);
+      await axiosPrivate.post("/api/providerService", {
+        service,
+        stripeAccountId: auth.stripeConnectedAccountId,
+      });
       getCategories();
     } catch (error) {
       toast.error(error.message);
@@ -179,7 +184,9 @@ const SalonServices = () => {
               <AccordionItem value={`item-${index}`} className="space-y-2">
                 <div className="flex items-center">
                   <AccordionTrigger>
-                    <h2 className="text-2xl font-medium text-left">{category.name}</h2>
+                    <h2 className="text-2xl font-medium text-left">
+                      {category.name}
+                    </h2>
                   </AccordionTrigger>
                   <div className="space-x-2">
                     <Popover>
