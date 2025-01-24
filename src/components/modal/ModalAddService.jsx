@@ -26,6 +26,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { convertToMinutes } from "@/utils/formatting";
+import { toast } from "sonner";
 
 const ModalAddService = ({ providerCategoryId, createService }) => {
   const [open, setOpen] = useState(false);
@@ -39,7 +40,7 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
     const { name, value } = e.target;
 
     const parsedValue =
-      name === "price"
+      name === "price" || name === "deposit"
         ? parseFloat(value)
         : name === "duration"
         ? parseFloat(convertToMinutes(value))
@@ -51,7 +52,9 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!service?.name || !service?.price || !service?.duration) {
-      setError("Veuillez renseigner tous les champs.");
+      toast.error("Veuillez renseigner tous les champs obligatoires.");
+      setError("border-destructive");
+      setTimeout(() => setError(null), 4500);
       return;
     }
 
@@ -60,7 +63,7 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
       await createService({ providerCategoryId, ...service });
       setOpen(false);
     } catch (error) {
-      setError("Une erreur est survenue, veuillez contacter le support.");
+      toast.error("Une erreur est survenue, veuillez contacter le support.");
     }
     setLoading(false);
   };
@@ -93,25 +96,45 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
                 name="name"
                 type="text"
                 onChange={handleChange}
+                className={error}
               />
             </div>
-            <div>
-              <Label htmlFor="price">Prix (sans €)</Label>
-              <Input
-                id="price"
-                name="price"
-                type="number"
-                onChange={handleChange}
-              />
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="price">Prix</Label>
+                <div className="flex items-center gap-2 w-2/3">
+                  <Input
+                    id="price"
+                    name="price"
+                    type="number"
+                    onChange={handleChange}
+                    className={error}
+                  />
+                  <span>€</span>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="deposit">Acompte</Label>
+                <div className="flex items-center gap-2 w-2/3">
+                  <Input
+                    id="deposit"
+                    name="deposit"
+                    type="number"
+                    onChange={handleChange}
+                  />
+                  <span>€</span>
+                </div>
+              </div>
             </div>
             <div>
-              <Label htmlFor="duration">Durée (heure:minute)</Label>
+              <Label htmlFor="duration">Durée (heures:minutes)</Label>
               <Input
                 id="duration"
                 name="duration"
                 type="time"
-                defaultValue="00:00"
+                defaultValue="01:30"
                 onChange={handleChange}
+                className={error}
               />
             </div>
             <div>
@@ -124,9 +147,6 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
               />
             </div>
           </div>
-          {error && setTimeout(() => setError(null), 3000) && (
-            <p className="text-destructive text-sm">{error}</p>
-          )}
           <DialogFooter className="sm:justify-start">
             <DialogClose asChild>
               <div className="w-full flex items-center justify-between">
@@ -159,25 +179,50 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
         <div className="flex flex-col px-4 gap-2">
           <div>
             <Label htmlFor="name">Nom</Label>
-            <Input id="name" name="name" type="text" onChange={handleChange} />
-          </div>
-          <div>
-            <Label htmlFor="price">Prix (en €)</Label>
             <Input
-              id="price"
-              name="price"
-              type="number"
+              id="name"
+              name="name"
+              type="text"
               onChange={handleChange}
+              className={error}
             />
           </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="price">Prix</Label>
+              <div className="flex items-center gap-2 w-2/3">
+                <Input
+                  id="price"
+                  name="price"
+                  type="number"
+                  onChange={handleChange}
+                  className={error}
+                />
+                <span>€</span>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="deposit">Acompte</Label>
+              <div className="flex items-center gap-2 w-2/3">
+                <Input
+                  id="deposit"
+                  name="deposit"
+                  type="number"
+                  onChange={handleChange}
+                />
+                <span>€</span>
+              </div>
+            </div>
+          </div>
           <div>
-            <Label htmlFor="duration">Durée (heure:minute)</Label>
+            <Label htmlFor="duration">Durée (heures:minutes)</Label>
             <Input
               id="duration"
               name="duration"
               type="time"
-              defaultValue="00:00"
+              defaultValue="01:30"
               onChange={handleChange}
+              className={error}
             />
           </div>
           <div>
@@ -191,9 +236,6 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
           </div>
         </div>
         <DrawerFooter className="pt-2">
-          {error && setTimeout(() => setError(null), 3000) && (
-            <p className="text-destructive text-sm">{error}</p>
-          )}
           <DrawerClose asChild>
             <div className="space-y-2">
               <Button

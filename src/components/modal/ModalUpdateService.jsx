@@ -26,6 +26,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { convertToMinutes } from "@/utils/formatting";
+import { toast } from "sonner";
 
 const ModalUpdateService = ({ prevService, updateService }) => {
   const [open, setOpen] = useState(false);
@@ -35,11 +36,25 @@ const ModalUpdateService = ({ prevService, updateService }) => {
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
+  const formatTime = (minutes) => {
+    // Calculate hours and remaining minutes
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+
+    // Format the output with leading zeros
+    const formattedHours = String(hours).padStart(2, "0");
+    const formattedMinutes = String(remainingMinutes).padStart(2, "0");
+
+    return `${formattedHours}:${formattedMinutes}`;
+  };
+
+  console.log(typeof formatTime(300));
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     const parsedValue =
-      name === "price"
+      name === "price" || name === "deposit"
         ? parseFloat(value)
         : name === "duration"
         ? parseFloat(convertToMinutes(value))
@@ -51,6 +66,14 @@ const ModalUpdateService = ({ prevService, updateService }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    if (!service?.name || !service?.price || !service?.duration) {
+      toast.error("Veuillez renseigner tous les champs obligatoires.");
+      setError("border-destructive");
+      setTimeout(() => setError(null), 4500);
+      setLoading(false);
+      return;
+    }
 
     const hasChanges = Object.keys(service).some(
       (key) => service[key] !== prevService[key]
@@ -72,8 +95,14 @@ const ModalUpdateService = ({ prevService, updateService }) => {
   };
 
   useEffect(() => {
+    const { name, price, duration, description } = prevService;
     if (!open) {
-      setService();
+      setService({
+        name,
+        price,
+        duration,
+        description,
+      });
     }
   }, [open]);
 
@@ -99,26 +128,47 @@ const ModalUpdateService = ({ prevService, updateService }) => {
                 type="text"
                 defaultValue={prevService.name}
                 onChange={handleChange}
+                className={error}
               />
             </div>
-            <div>
-              <Label htmlFor="price">Prix (sans €)</Label>
-              <Input
-                id="price"
-                name="price"
-                type="number"
-                defaultValue={prevService.price}
-                onChange={handleChange}
-              />
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="price">Prix</Label>
+                <div className="flex items-center gap-2 w-2/3">
+                  <Input
+                    id="price"
+                    name="price"
+                    type="number"
+                    onChange={handleChange}
+                    defaultValue={prevService.price}
+                    className={error}
+                  />
+                  <span>€</span>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="deposit">Acompte</Label>
+                <div className="flex items-center gap-2 w-2/3">
+                  <Input
+                    id="deposit"
+                    name="deposit"
+                    type="number"
+                    onChange={handleChange}
+                    defaultValue={prevService.deposit}
+                  />
+                  <span>€</span>
+                </div>
+              </div>
             </div>
             <div>
-              <Label htmlFor="duration">Durée (heure:minute)</Label>
+              <Label htmlFor="duration">Durée (heures:minutes)</Label>
               <Input
                 id="duration"
                 name="duration"
                 type="time"
-                defaultValue={prevService.duration}
+                defaultValue={formatTime(prevService.duration)}
                 onChange={handleChange}
+                className={error}
               />
             </div>
             <div>
@@ -132,9 +182,6 @@ const ModalUpdateService = ({ prevService, updateService }) => {
               />
             </div>
           </div>
-          {error && setTimeout(() => setError(null), 3000) && (
-            <p className="text-destructive text-sm">{error}</p>
-          )}
           <DialogFooter className="sm:justify-start">
             <DialogClose asChild>
               <div className="w-full flex items-center justify-between">
@@ -173,25 +220,47 @@ const ModalUpdateService = ({ prevService, updateService }) => {
               type="text"
               defaultValue={prevService.name}
               onChange={handleChange}
+              className={error}
             />
           </div>
-          <div>
-            <Label htmlFor="price">Prix (en €)</Label>
-            <Input
-              id="price"
-              name="price"
-              type="number"
-              defaultValue={prevService.price}
-              onChange={handleChange}
-            />
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="price">Prix</Label>
+              <div className="flex items-center gap-2 w-2/3">
+                <Input
+                  id="price"
+                  name="price"
+                  type="number"
+                  onChange={handleChange}
+                  defaultValue={prevService.price}
+                  className={error}
+                />
+                <span>€</span>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="deposit">Acompte</Label>
+              <div className="flex items-center gap-2 w-2/3">
+                <Input
+                  id="deposit"
+                  name="deposit"
+                  type="number"
+                  onChange={handleChange}
+                  defaultValue={prevService.deposit}
+                />
+                <span>€</span>
+              </div>
+            </div>
           </div>
           <div>
-            <Label htmlFor="duration">Durée (heure:minute)</Label>
+            <Label htmlFor="duration">Durée (heures:minutes)</Label>
             <Input
               id="duration"
               name="duration"
               type="time"
               onChange={handleChange}
+              defaultValue={formatTime(prevService.duration)}
+              className={error}
             />
           </div>
           <div>
@@ -206,9 +275,6 @@ const ModalUpdateService = ({ prevService, updateService }) => {
           </div>
         </div>
         <DrawerFooter className="pt-2">
-          {error && setTimeout(() => setError(null), 3000) && (
-            <p className="text-destructive text-sm">{error}</p>
-          )}
           <DrawerClose asChild>
             <div className="space-y-2">
               <Button
