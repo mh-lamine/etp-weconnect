@@ -1,4 +1,3 @@
-import axiosPrivate from "@/api/axiosPrivate";
 import ModalAddMember from "@/components/modal/ModalAddMember";
 import {
   Breadcrumb,
@@ -21,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import { EllipsisVertical } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -32,6 +32,7 @@ export default function SalonMembers() {
 
   const navigate = useNavigate();
   const location = useLocation();
+  const axiosPrivate = useAxiosPrivate();
 
   useEffect(() => {
     getMembers();
