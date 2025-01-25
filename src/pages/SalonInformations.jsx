@@ -30,11 +30,22 @@ const validFileTypes = ["image/jpeg", "image/jpg", "image/png"];
 
 export default function SalonInformations() {
   const { auth } = useAuth();
+
   const [prevInfos, setPrevInfos] = useState(auth);
+  const [salonInfos, setSalonInfos] = useState({
+    name: auth.name,
+    address: auth.address,
+    email: auth.email,
+    phoneNumber: auth.phoneNumber,
+    bookingTerms: auth.bookingTerms,
+    autoAcceptAppointments: auth.autoAcceptAppointments,
+    isInVacancyMode: auth.isInVacancyMode,
+    profilePicture: auth.profilePicture,
+    coverImage: auth.coverImage,
+  });
+
   const [error, setError] = useState();
   const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(false);
-  const [salonInfos, setSalonInfos] = useState();
 
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
@@ -50,8 +61,6 @@ export default function SalonInformations() {
       if (error.response?.status === 401) {
         navigate("/login", { state: { from: location }, replace: true });
       }
-    } finally {
-      setFetching(false);
     }
   }
 
@@ -77,6 +86,20 @@ export default function SalonInformations() {
     }
   };
 
+  const resetSalonInfos = () => {
+    setSalonInfos({
+      name: auth.name,
+      address: auth.address,
+      email: auth.email,
+      phoneNumber: auth.phoneNumber,
+      bookingTerms: auth.bookingTerms,
+      autoAcceptAppointments: auth.autoAcceptAppointments,
+      isInVacancyMode: auth.isInVacancyMode,
+      profilePicture: auth.profilePicture,
+      coverImage: auth.coverImage,
+    });
+  };
+
   const handleChange = (e) => {
     const { id, value } = e.target;
     setSalonInfos({ ...salonInfos, [id]: value });
@@ -85,9 +108,11 @@ export default function SalonInformations() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    if (!salonInfos) {
+
+    const { name, email, phoneNumber } = salonInfos;
+    if (!name || !email || !phoneNumber) {
       setLoading(false);
-      toast("Aucune modification n'a été effectuée");
+      toast.error("Veuillez renseigner tous les champs obligatoires");
       return;
     }
 
@@ -96,38 +121,35 @@ export default function SalonInformations() {
     );
 
     if (!hasChanges) {
-      setSalonInfos();
       setLoading(false);
       toast("Aucune modification n'a été effectuée");
       return;
     }
 
-    if (
-      salonInfos.phoneNumber &&
-      !PHONE_NUMBER_REGEX.test(salonInfos.phoneNumber)
-    ) {
+    if (email && !EMAIL_REGEX.test(email)) {
+      toast.error("L'adresse email n'est pas valide");
+      setLoading(false);
+      return;
+    }
+
+    if (phoneNumber && !PHONE_NUMBER_REGEX.test(phoneNumber)) {
       toast.error("Le numéro de téléphone n'est pas valide");
       setLoading(false);
       return;
     }
 
-    if (salonInfos.email && !EMAIL_REGEX.test(salonInfos.email)) {
-      toast.error("L'adresse email n'est pas valide");
-      setLoading(false);
-      return;
-    }
+    // Optimistically update the UI before making the API call
+    const updatedInfos = { ...salonInfos };
+    setSalonInfos(updatedInfos); // Immediately update the state to reflect changes
+
     try {
       await axiosPrivate.patch("/api/salon", { ...salonInfos });
       await getSalon();
       toast("Modifications enregistrées");
     } catch (error) {
-      if (!error.response) {
-        toast.error("Une erreur est survenue, veuillez contacter le support");
-      } else {
-        toast.error(error.response.data.message);
-      }
+      resetSalonInfos();
+      toast.error("Une erreur est survenue, veuillez contacter le support");
     }
-    setSalonInfos();
     setLoading(false);
   };
 
@@ -159,10 +181,6 @@ export default function SalonInformations() {
     }
   };
 
-  if (fetching) {
-    return <Loader2 className="w-8 h-8 animate-spin flex-1" />;
-  }
-
   if (error) {
     return <Error errMsg={error} />;
   }
@@ -192,10 +210,10 @@ export default function SalonInformations() {
       </Breadcrumb>
       <h1 className="text-3xl font-semibold">Mes informations</h1>
       <ProviderHeader
-        name={prevInfos.name}
-        address={prevInfos.address}
-        profilePicture={prevInfos.profilePicture}
-        coverImage={prevInfos.coverImage}
+        name={salonInfos.name}
+        address={salonInfos.address}
+        profilePicture={salonInfos.profilePicture}
+        coverImage={salonInfos.coverImage}
         rmprofile={rmprofile}
         rmcover={rmcover}
       />
@@ -229,28 +247,28 @@ export default function SalonInformations() {
             id="name"
             label="Nom du salon"
             type="text"
-            defaultValue={prevInfos.name}
+            defaultValue={salonInfos.name}
             handleChange={handleChange}
           />
           <EditableInput
             id="address"
             label="Adresse"
             type="text"
-            defaultValue={prevInfos.address}
+            defaultValue={salonInfos.address}
             handleChange={handleChange}
           />
           <EditableInput
             id="phoneNumber"
             label="Téléphone du salon"
             type="tel"
-            defaultValue={prevInfos.phoneNumber}
+            defaultValue={salonInfos.phoneNumber}
             handleChange={handleChange}
           />
           <EditableInput
             id="email"
             label="Email"
             type="email"
-            defaultValue={prevInfos.email}
+            defaultValue={salonInfos.email}
             handleChange={handleChange}
           />
         </div>
@@ -265,8 +283,7 @@ export default function SalonInformations() {
               <Switch
                 id="autoAccept"
                 checked={
-                  salonInfos?.autoAcceptAppointments ??
-                  prevInfos.autoAcceptAppointments
+                  salonInfos?.autoAcceptAppointments
                 }
                 onCheckedChange={(checked) => {
                   setSalonInfos({
@@ -296,7 +313,7 @@ export default function SalonInformations() {
               <Switch
                 id="vacancyMode"
                 checked={
-                  salonInfos?.isInVacancyMode ?? prevInfos.isInVacancyMode
+                  salonInfos?.isInVacancyMode
                 }
                 onCheckedChange={(checked) => {
                   setSalonInfos({
@@ -319,7 +336,7 @@ export default function SalonInformations() {
           <Textarea
             id="bookingTerms"
             type="text"
-            defaultValue={prevInfos.bookingTerms}
+            defaultValue={salonInfos.bookingTerms}
             onChange={handleChange}
             className="text-lg whitespace-pre-line"
           />
@@ -328,13 +345,7 @@ export default function SalonInformations() {
           <Button onClick={handleSubmit} disabled={loading}>
             Enregistrer les modifications
           </Button>
-          <Button
-            variant="outline"
-            type="reset"
-            onClick={() => {
-              setSalonInfos();
-            }}
-          >
+          <Button variant="outline" type="reset" onClick={resetSalonInfos}>
             Annuler
           </Button>
         </div>
