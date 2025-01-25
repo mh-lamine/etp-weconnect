@@ -1,4 +1,4 @@
-import { useEffect, lazy, Suspense, useState } from "react";
+import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import RequireAuth from "./components/RequireAuth";
@@ -6,9 +6,6 @@ import PersistLogin from "./components/PersistLogin";
 
 import AuthLayout from "./layouts/AuthLayout";
 import Layout from "./layouts/Layout";
-
-import useAuth from "./hooks/useAuth";
-import useAxiosPrivate from "./hooks/useAxiosPrivate";
 
 import LoginPage from "./pages/LoginPage";
 import ErrorPage from "./pages/ErrorPage";
@@ -29,29 +26,6 @@ const MemberServices = lazy(() => import("./pages/MemberServices"));
 const SalonPayment = lazy(() => import("./pages/SalonPayment"));
 
 export default function App() {
-  const { setAuth } = useAuth();
-  const [loading, setLoading] = useState(true);
-  const axiosPrivate = useAxiosPrivate();
-
-  useEffect(() => {
-    async function getUser() {
-      try {
-        const response = await axiosPrivate.get("/api/users");
-        !response.data.isProvider &&
-          window.location.replace("https://weconnect-rdv.fr");
-        setAuth((prev) => ({ ...prev, ...response.data }));
-      } catch (error) {
-        console.error(error);
-      }
-      setLoading(false);
-    }
-    getUser();
-  }, []);
-
-  if (loading) {
-    return <PageLoader />;
-  }
-
   return (
     <>
       <Routes>

@@ -13,9 +13,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import useAuth from "@/hooks/useAuth";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -28,10 +29,11 @@ const EMAIL_REGEX =
 const validFileTypes = ["image/jpeg", "image/jpg", "image/png"];
 
 export default function SalonInformations() {
-  const [prevInfos, setPrevInfos] = useState();
+  const { auth } = useAuth();
+  const [prevInfos, setPrevInfos] = useState(auth);
   const [error, setError] = useState();
   const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(true);
+  const [fetching, setFetching] = useState(false);
   const [salonInfos, setSalonInfos] = useState();
 
   const axiosPrivate = useAxiosPrivate();
@@ -74,10 +76,6 @@ export default function SalonInformations() {
       console.log(error);
     }
   };
-
-  useEffect(() => {
-    getSalon();
-  }, []);
 
   const handleChange = (e) => {
     const { id, value } = e.target;

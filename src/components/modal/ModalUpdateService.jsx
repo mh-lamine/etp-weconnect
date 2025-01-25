@@ -48,8 +48,6 @@ const ModalUpdateService = ({ prevService, updateService }) => {
     return `${formattedHours}:${formattedMinutes}`;
   };
 
-  console.log(typeof formatTime(300));
-
   const handleChange = (e) => {
     const { name, value } = e.target;
 
