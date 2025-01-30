@@ -82,14 +82,14 @@ export default function SalonPayment() {
       ) : (
         <div>
           <div>
-            <Label htmlFor="deposit">Acompte par défaut</Label>
+            <Label htmlFor="defaultDeposit">Acompte par défaut</Label>
             <div className="flex items-center gap-2 w-2/3">
               <Input
                 id="defaultDeposit"
-                name="dfaultDeposit"
                 type="number"
                 defaultValue={auth.defaultDeposit}
                 onChange={(e) => setDefaultDeposit(e.target.value)}
+                className="w-fit"
               />
               <span>%</span>
             </div>
@@ -110,10 +110,11 @@ export default function SalonPayment() {
             </p>
           </div>
           <div>
-            <Label htmlFor="defaultPaymentOption" className="mt-4">
+            <Label className="mt-4">
               Paiement par défault
             </Label>
             <Select
+              id="defaultPaymentOption"
               onValueChange={(value) => setDefaultPaymentOption(value)}
               defaultValue={auth.defaultPaymentOption}
             >

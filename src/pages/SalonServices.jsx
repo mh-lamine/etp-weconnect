@@ -32,6 +32,12 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+const paymentTranslations = {
+  ON_SITE: "Sur place",
+  DEPOSIT: "Acompte",
+  FULL: "Complet",
+};
+
 const SalonServices = () => {
   const [categories, setCategories] = useState();
   const [loading, setLoading] = useState(true);
@@ -227,15 +233,9 @@ const SalonServices = () => {
                     (service) =>
                       service.isActive && (
                         <AccordionContent key={service.id}>
-                          <li className="flex items-start justify-between gap-10 w-full rounded-md p-4 pr-0 bg-gray-100">
-                            <div>
+                          <li className="space-y-2 w-full rounded-md p-4 pt-2 pr-0 bg-gray-100">
+                            <div className="flex items-center justify-between">
                               <h3 className="text-xl">{service.name}</h3>
-                              <p>{service.description}</p>
-                            </div>
-                            <div className="flex flex-col-reverse gap-2 items-center md:flex-row md:gap-0">
-                              <p>{convertToHhMm(service.duration)}</p>
-                              <div className="divider divider-horizontal" />
-                              <p>{service.price}€</p>
                               <Popover>
                                 <PopoverTrigger asChild>
                                   <Button variant="ghost" className="ml-4">
@@ -246,7 +246,6 @@ const SalonServices = () => {
                                   align="end"
                                   className="w-fit flex flex-col gap-2"
                                 >
-                                  {/* //TODO: Add modal to assign service to members */}
                                   <ModalUpdateService
                                     prevService={service}
                                     updateService={updateService}
@@ -258,6 +257,33 @@ const SalonServices = () => {
                                   />
                                 </PopoverContent>
                               </Popover>
+                            </div>
+                            <div className="space-y-4">
+                              <p className="pr-4 line-clamp-2 text-muted">
+                                {service.description}
+                              </p>
+                              <div className="flex flex-wrap gap-2 items-center justify-between pr-4">
+                                <div className="flex gap-2 bg-primary-400 w-fit px-3 py-2 rounded text-white">
+                                  <p>{service.price}€</p>
+                                  &bull;
+                                  <p>{convertToHhMm(service.duration)}</p>
+                                </div>
+                                <div className="flex items-center gap-1 bg-primary-300 w-fit p-1 rounded text-white">
+                                  <div className="bg-primary-400 w-fit px-2 py-1 rounded">
+                                    <p>
+                                      {
+                                        paymentTranslations[
+                                          service.paymentOption
+                                        ]
+                                      }
+                                    </p>
+                                  </div>
+                                  &bull;
+                                  <div className="bg-primary-400 w-fit px-2 py-1 rounded">
+                                    <p>Acompte {service.deposit}€</p>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </li>
                         </AccordionContent>

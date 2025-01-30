@@ -73,6 +73,12 @@ const ModalUpdateService = ({ prevService, updateService }) => {
       return;
     }
 
+    if (service.deposit > service.price) {
+      toast.error("L'acompte ne peut pas être supérieur au prix.");
+      setLoading(false);
+      return;
+    }
+
     const hasChanges = Object.keys(service).some(
       (key) => service[key] !== prevService[key]
     );

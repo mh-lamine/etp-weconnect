@@ -27,6 +27,14 @@ import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { convertToMinutes } from "@/utils/formatting";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 const ModalAddService = ({ providerCategoryId, createService }) => {
   const [open, setOpen] = useState(false);
@@ -55,6 +63,13 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
       toast.error("Veuillez renseigner tous les champs obligatoires.");
       setError("border-destructive");
       setTimeout(() => setError(null), 4500);
+      return;
+    }
+
+    if (service.deposit > service.price) {
+      toast.error(
+        "Le montant de l'acompte ne peut pas être supérieur au prix."
+      );
       return;
     }
 
@@ -99,10 +114,10 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
                 className={error}
               />
             </div>
-            <div className="flex items-center justify-between">
+            <div className="grid grid-cols-3 gap-6">
               <div>
                 <Label htmlFor="price">Prix</Label>
-                <div className="flex items-center gap-2 w-2/3">
+                <div className="flex items-center gap-2">
                   <Input
                     id="price"
                     name="price"
@@ -114,8 +129,26 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
                 </div>
               </div>
               <div>
+                <Label>Option</Label>
+                <Select
+                  // onValueChange={(value) => setDefaultPaymentOption(value)}
+                  // defaultValue={auth.defaultPaymentOption}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="ON_SITE">Sur place</SelectItem>
+                      <SelectItem value="DEPOSIT">Acompte</SelectItem>
+                      <SelectItem value="FULL">Complet</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label htmlFor="deposit">Acompte</Label>
-                <div className="flex items-center gap-2 w-2/3">
+                <div className="flex items-center gap-2">
                   <Input
                     id="deposit"
                     name="deposit"
@@ -132,7 +165,7 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
                 id="duration"
                 name="duration"
                 type="time"
-                defaultValue="01:30"
+                defaultValue="00:00"
                 onChange={handleChange}
                 className={error}
               />
@@ -187,10 +220,10 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
               className={error}
             />
           </div>
-          <div className="flex items-center justify-between">
+          <div className="grid grid-cols-3 gap-6">
             <div>
               <Label htmlFor="price">Prix</Label>
-              <div className="flex items-center gap-2 w-2/3">
+              <div className="flex items-center gap-2">
                 <Input
                   id="price"
                   name="price"
@@ -202,8 +235,26 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
               </div>
             </div>
             <div>
+              <Label>Option</Label>
+              <Select
+              // onValueChange={(value) => setDefaultPaymentOption(value)}
+              // defaultValue={auth.defaultPaymentOption}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="ON_SITE">Sur place</SelectItem>
+                    <SelectItem value="DEPOSIT">Acompte</SelectItem>
+                    <SelectItem value="FULL">Complet</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
               <Label htmlFor="deposit">Acompte</Label>
-              <div className="flex items-center gap-2 w-2/3">
+              <div className="flex items-center gap-2">
                 <Input
                   id="deposit"
                   name="deposit"
