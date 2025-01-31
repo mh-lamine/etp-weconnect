@@ -1,4 +1,3 @@
-import axiosPrivate from "@/api/axiosPrivate";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -17,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import useAuth from "@/hooks/useAuth";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import { Label } from "@radix-ui/react-dropdown-menu";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -26,6 +26,7 @@ export default function SalonPayment() {
   const [loading, setLoading] = useState(false);
 
   const { auth } = useAuth();
+  const axiosPrivate = useAxiosPrivate();
   const [defaultDeposit, setDefaultDeposit] = useState(auth?.defaultDeposit);
   const [defaultPaymentOption, setDefaultPaymentOption] = useState(
     auth?.defaultPaymentOption
@@ -45,7 +46,7 @@ export default function SalonPayment() {
     }
   };
 
-  const hadleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     console.log("submitting");
   };
 
