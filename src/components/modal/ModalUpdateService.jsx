@@ -123,7 +123,7 @@ const ModalUpdateService = ({ prevService, updateService }) => {
               Modifiez les détails de la prestation.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 overflow-y-scroll no-scrollbar">
             <div>
               <Label htmlFor="name">Nom</Label>
               <Input
