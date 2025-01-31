@@ -67,10 +67,7 @@ const SalonServices = () => {
 
   async function createService(service) {
     try {
-      await axiosPrivate.post("/api/providerService", {
-        service,
-        stripeAccountId: auth.stripeConnectedAccountId,
-      });
+      await axiosPrivate.post("/api/providerService", service);
       getCategories();
     } catch (error) {
       toast.error(error.message);
