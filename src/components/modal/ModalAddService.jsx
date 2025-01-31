@@ -165,7 +165,6 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
                 id="duration"
                 name="duration"
                 type="time"
-                defaultValue="00:00"
                 onChange={handleChange}
                 className={error}
               />
@@ -271,7 +270,6 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
               id="duration"
               name="duration"
               type="time"
-              defaultValue="01:30"
               onChange={handleChange}
               className={error}
             />
