@@ -27,6 +27,14 @@ import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { convertToMinutes } from "@/utils/formatting";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 const ModalUpdateService = ({ prevService, updateService }) => {
   const [open, setOpen] = useState(false);
@@ -73,6 +81,12 @@ const ModalUpdateService = ({ prevService, updateService }) => {
       return;
     }
 
+    if (service.paymentOption === "DEPOSIT" && !service.deposit) {
+      toast.error("Veuillez renseigner l'acompte.");
+      setLoading(false);
+      return;
+    }
+
     if (service.deposit > service.price) {
       toast.error("L'acompte ne peut pas être supérieur au prix.");
       setLoading(false);
@@ -93,17 +107,20 @@ const ModalUpdateService = ({ prevService, updateService }) => {
       await updateService(prevService.id, service);
       setOpen(false);
     } catch (error) {
-      setError("Une erreur est survenue, veuillez contacter le support.");
+      toast.error("Une erreur est survenue, veuillez contacter le support.");
     }
     setLoading(false);
   };
 
   useEffect(() => {
-    const { name, price, duration, description } = prevService;
+    const { name, price, deposit, paymentOption, duration, description } =
+      prevService;
     if (!open) {
       setService({
         name,
         price,
+        deposit,
+        paymentOption,
         duration,
         description,
       });
@@ -135,30 +152,50 @@ const ModalUpdateService = ({ prevService, updateService }) => {
                 className={error}
               />
             </div>
-            <div className="flex items-center justify-between">
+            <div className="grid grid-cols-3 gap-6">
               <div>
                 <Label htmlFor="price">Prix</Label>
-                <div className="flex items-center gap-2 w-2/3">
+                <div className="flex items-center gap-2">
                   <Input
                     id="price"
                     name="price"
                     type="number"
-                    onChange={handleChange}
                     defaultValue={prevService.price}
+                    onChange={handleChange}
                     className={error}
                   />
                   <span>€</span>
                 </div>
               </div>
               <div>
+                <Label>Option</Label>
+                <Select
+                  onValueChange={(value) =>
+                    setService({ ...service, paymentOption: value })
+                  }
+                  defaultValue={prevService.paymentOption}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="ON_SITE">Sur place</SelectItem>
+                      <SelectItem value="DEPOSIT">Acompte</SelectItem>
+                      <SelectItem value="FULL">Complet</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label htmlFor="deposit">Acompte</Label>
-                <div className="flex items-center gap-2 w-2/3">
+                <div className="flex items-center gap-2">
                   <Input
                     id="deposit"
                     name="deposit"
                     type="number"
-                    onChange={handleChange}
                     defaultValue={prevService.deposit}
+                    onChange={handleChange}
                   />
                   <span>€</span>
                 </div>
@@ -227,30 +264,50 @@ const ModalUpdateService = ({ prevService, updateService }) => {
               className={error}
             />
           </div>
-          <div className="flex items-center justify-between">
+          <div className="grid grid-cols-3 gap-6">
             <div>
               <Label htmlFor="price">Prix</Label>
-              <div className="flex items-center gap-2 w-2/3">
+              <div className="flex items-center gap-2">
                 <Input
                   id="price"
                   name="price"
                   type="number"
-                  onChange={handleChange}
                   defaultValue={prevService.price}
+                  onChange={handleChange}
                   className={error}
                 />
                 <span>€</span>
               </div>
             </div>
             <div>
+              <Label>Option</Label>
+              <Select
+                onValueChange={(value) =>
+                  setService({ ...service, paymentOption: value })
+                }
+                defaultValue={prevService.paymentOption}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="ON_SITE">Sur place</SelectItem>
+                    <SelectItem value="DEPOSIT">Acompte</SelectItem>
+                    <SelectItem value="FULL">Complet</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
               <Label htmlFor="deposit">Acompte</Label>
-              <div className="flex items-center gap-2 w-2/3">
+              <div className="flex items-center gap-2">
                 <Input
                   id="deposit"
                   name="deposit"
                   type="number"
-                  onChange={handleChange}
                   defaultValue={prevService.deposit}
+                  onChange={handleChange}
                 />
                 <span>€</span>
               </div>

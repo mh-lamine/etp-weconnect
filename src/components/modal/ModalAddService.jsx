@@ -66,6 +66,12 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
       return;
     }
 
+    if (service.paymentOption === "DEPOSIT" && !service.deposit) {
+      toast.error("Veuillez renseigner l'acompte.");
+      setLoading(false);
+      return;
+    }
+
     if (service.deposit > service.price) {
       toast.error(
         "Le montant de l'acompte ne peut pas être supérieur au prix."
@@ -131,8 +137,9 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
               <div>
                 <Label>Option</Label>
                 <Select
-                  // onValueChange={(value) => setDefaultPaymentOption(value)}
-                  // defaultValue={auth.defaultPaymentOption}
+                  onValueChange={(value) =>
+                    setService({ ...service, paymentOption: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -236,8 +243,9 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
             <div>
               <Label>Option</Label>
               <Select
-              // onValueChange={(value) => setDefaultPaymentOption(value)}
-              // defaultValue={auth.defaultPaymentOption}
+                onValueChange={(value) =>
+                  setService({ ...service, paymentOption: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
