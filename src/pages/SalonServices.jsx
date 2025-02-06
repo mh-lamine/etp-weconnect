@@ -260,25 +260,21 @@ const SalonServices = () => {
                                 {service.description}
                               </p>
                               <div className="flex flex-wrap gap-2 items-center justify-between pr-4">
-                                <div className="flex gap-2 bg-primary-400 w-fit px-3 py-2 rounded text-white">
+                                <div className="flex gap-1 bg-primary text-white w-fit px-2 py-1 rounded">
                                   <p>{service.price}€</p>
                                   &bull;
                                   <p>{convertToHhMm(service.duration)}</p>
                                 </div>
-                                <div className="flex items-center gap-1 bg-primary-300 w-fit p-1 rounded text-white">
-                                  <div className="bg-primary-400 w-fit px-2 py-1 rounded">
-                                    <p>
-                                      {
-                                        paymentTranslations[
-                                          service.paymentOption
-                                        ]
-                                      }
-                                    </p>
-                                  </div>
-                                  &bull;
-                                  <div className="bg-primary-400 w-fit px-2 py-1 rounded">
-                                    <p>Acompte {service.deposit}€</p>
-                                  </div>
+                                <div className="flex gap-1 bg-primary text-white w-fit px-2 py-1 rounded">
+                                  <p>
+                                    {paymentTranslations[service.paymentOption || auth.defaultPaymentOption]}
+                                  </p>
+                                  {service.paymentOption === "DEPOSIT" && (
+                                    <>
+                                      &bull;
+                                      <p>{service.deposit}€</p>
+                                    </>
+                                  )}
                                 </div>
                               </div>
                             </div>

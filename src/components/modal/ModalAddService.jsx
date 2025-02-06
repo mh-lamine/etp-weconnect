@@ -146,6 +146,9 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
+                      <SelectItem value="DEFAULT">
+                        <p className="text-primary">Par defaut</p>
+                      </SelectItem>
                       <SelectItem value="ON_SITE">Sur place</SelectItem>
                       <SelectItem value="DEPOSIT">Acompte</SelectItem>
                       <SelectItem value="FULL">Complet</SelectItem>
@@ -252,6 +255,9 @@ const ModalAddService = ({ providerCategoryId, createService }) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
+                    <SelectItem value="DEFAULT">
+                      <p className="text-primary">Par defaut</p>
+                    </SelectItem>
                     <SelectItem value="ON_SITE">Sur place</SelectItem>
                     <SelectItem value="DEPOSIT">Acompte</SelectItem>
                     <SelectItem value="FULL">Complet</SelectItem>
