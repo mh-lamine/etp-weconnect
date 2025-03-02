@@ -1,5 +1,3 @@
-import axiosPrivate from "@/api/axiosPrivate";
-import EditableInput from "@/components/EditableInput";
 import ModalAction from "@/components/modal/ModalAction";
 import {
   Breadcrumb,
@@ -9,19 +7,24 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import useAuth from "@/hooks/useAuth";
+import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function MemberInformations() {
-  const [member, setMember] = useState(null);
+  const [prevMember, setPrevMember] = useState(null);
   const [memberInfos, setMemberInfos] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const axiosPrivate = useAxiosPrivate();
 
   useEffect(() => {
     getMember();
@@ -30,7 +33,7 @@ export default function MemberInformations() {
   async function getMember() {
     try {
       const { data } = await axiosPrivate.get(`/api/salon/members/${id}`);
-      setMember(data);
+      setPrevMember(data);
     } catch (error) {
       console.error(error);
       if (error.response?.status === 401) {
@@ -49,8 +52,20 @@ export default function MemberInformations() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    if (!memberInfos) return;
+
+    const hasChanges = Object.keys(memberInfos).some(
+      (key) => memberInfos[key] !== prevMember[key]
+    );
+
+    if (!hasChanges) {
+      setLoading(false);
+      toast("Aucune modification n'a été effectuée");
+      return;
+    }
+
     try {
+      setLoading(true);
       await axiosPrivate.patch(`/api/salon/members/${id}`, memberInfos);
       getMember();
       toast.success("Les informations du membre ont été mises à jour.");
@@ -95,64 +110,79 @@ export default function MemberInformations() {
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
               <Link to={`/salon/members/${id}/informations`}>
-                {member?.firstName} {member?.lastName}
+                {prevMember?.firstName} {prevMember?.lastName}
               </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <h1 className="text-3xl font-semibold">
-        {member?.firstName} {member?.lastName}
+        {prevMember?.firstName} {prevMember?.lastName}
       </h1>
       <p className="text-muted">Gérez les informations du membre.</p>
-      <form className="space-y-4">
+      <form
+        className="space-y-4"
+        onSubmit={handleSubmit}
+        onReset={(e) => {
+          e.target.reset();
+          setMemberInfos(null);
+        }}
+      >
         <div className="space-y-2 md:space-y-0 md:grid grid-cols-2 md:gap-4">
-          <EditableInput
-            id="firstName"
-            label="Prénom"
-            type="text"
-            defaultValue={member?.firstName}
-            handleChange={handleChange}
-          />
-          <EditableInput
-            id="lastName"
-            label="Nom"
-            type="text"
-            defaultValue={member?.lastName}
-            handleChange={handleChange}
-          />
-          <EditableInput
-            id="accessCode"
-            label="Code d'accès"
-            type="text"
-            defaultValue={member?.accessCode}
-            disabled={true}
-          />
+          <div>
+            <Label htmlFor="firstName">Prénom</Label>
+            <Input
+              id="firstName"
+              type="text"
+              name="firstName"
+              defaultValue={prevMember?.firstName}
+              onChange={handleChange}
+              className="text-lg"
+            />
+          </div>
+          <div>
+            <Label htmlFor="lastName">Nom</Label>
+            <Input
+              id="lastName"
+              type="text"
+              name="lastName"
+              defaultValue={prevMember?.lastName}
+              onChange={handleChange}
+              className="text-lg"
+            />
+          </div>
+          <div>
+            <Label htmlFor="accessCode">Code d'accès</Label>
+            <Input
+              id="accessCode"
+              type="text"
+              name="accessCode"
+              defaultValue={prevMember?.accessCode}
+              onChange={handleChange}
+              disabled={true}
+              className="text-lg"
+            />
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              "Enregistrer les modifications"
-            )}
-          </Button>
-          <Button
-            variant="outline"
-            type="reset"
-            onClick={() => {
-              setMemberInfos();
-              setshowActionButtons(false);
-            }}
-          >
-            Annuler
-          </Button>
-        </div>
+        {memberInfos && (
+          <div className="flex gap-2">
+            <Button type="submit" disabled={loading}>
+              {loading ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                "Enregistrer les modifications"
+              )}
+            </Button>
+            <Button variant="outline" type="reset">
+              Annuler
+            </Button>
+          </div>
+        )}
       </form>
 
       <div className="mt-auto">
         <ModalAction
-          id={member?.id}
+          id={prevMember?.id}
           action={removeMember}
           actionLabel="Retirer le membre"
           variant="destructive"
@@ -160,7 +190,7 @@ export default function MemberInformations() {
           description="Le membre sera retiré du salon et ne pourra plus accéder à l'application."
           trigger="Retirer le membre"
           triggerVariant="destructive"
-          successMessage={`${member?.firstName} ${member?.lastName} a été retiré du salon.`}
+          successMessage={`${prevMember?.firstName} ${prevMember?.lastName} a été retiré du salon.`}
         />
       </div>
     </main>
