@@ -121,7 +121,7 @@ export default function UpdateService() {
     }
 
     const hasChanges = Object.keys(formData).some(
-      (key) => service[key] !== service[key]
+      (key) => formData[key] !== service[key]
     );
 
     if (!hasChanges) {
