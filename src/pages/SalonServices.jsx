@@ -166,7 +166,7 @@ const SalonServices = () => {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to="/salon/availabilities">Prestations</Link>
+              <Link to="/salon/services">Prestations</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
@@ -243,10 +243,15 @@ const SalonServices = () => {
                                   align="end"
                                   className="w-fit flex flex-col gap-2"
                                 >
-                                  <ModalUpdateService
+                                  <Button variant="outline">
+                                    <Link to={`/salon/services/${service.id}`}>
+                                      Modifier la prestation
+                                    </Link>
+                                  </Button>
+                                  {/* <ModalUpdateService
                                     prevService={service}
                                     updateService={updateService}
-                                  />
+                                  /> */}
                                   <ModalDisableService
                                     id={service.id}
                                     providerCategoryId={category.id}
@@ -260,14 +265,19 @@ const SalonServices = () => {
                                 {service.description}
                               </p>
                               <div className="flex flex-wrap gap-2 items-center justify-between pr-4">
-                                <div className="flex gap-1 bg-primary text-white w-fit px-2 py-1 rounded">
+                                <div className="flex gap-2 bg-primary text-white w-fit px-2 py-1 rounded">
                                   <p>{service.price}€</p>
                                   &bull;
                                   <p>{convertToHhMm(service.duration)}</p>
                                 </div>
-                                <div className="flex gap-1 bg-primary text-white w-fit px-2 py-1 rounded">
+                                <div className="flex gap-2 bg-primary text-white w-fit px-2 py-1 rounded">
                                   <p>
-                                    {paymentTranslations[service.paymentOption || auth.defaultPaymentOption]}
+                                    {
+                                      paymentTranslations[
+                                        service.paymentOption ||
+                                          auth.defaultPaymentOption
+                                      ]
+                                    }
                                   </p>
                                   {service.paymentOption === "DEPOSIT" && (
                                     <>

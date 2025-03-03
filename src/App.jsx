@@ -14,6 +14,7 @@ import { Toaster } from "sonner";
 import { AlertCircle, CheckCircle } from "lucide-react";
 import RequireAdmin from "./components/RequireAdmin";
 import LoginMember from "./pages/LoginMember";
+import UpdateService from "./pages/UpdateService";
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Salon = lazy(() => import("./pages/Salon"));
@@ -77,6 +78,14 @@ export default function App() {
                   element={
                     <Suspense fallback={<PageLoader />}>
                       <SalonServices />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="salon/services/:serviceId"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <UpdateService />
                     </Suspense>
                   }
                 />
