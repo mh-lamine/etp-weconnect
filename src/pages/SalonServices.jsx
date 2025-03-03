@@ -202,10 +202,17 @@ const SalonServices = () => {
                         align="end"
                         className="w-fit flex flex-col gap-2"
                       >
-                        <ModalAddService
+                        {/* <ModalAddService
                           providerCategoryId={category.id}
                           createService={createService}
-                        />
+                        /> */}
+                        <Button variant="outline">
+                          <Link
+                            to={`/salon/services/create-service?providerCategoryId=${category.id}`}
+                          >
+                            Ajouter une prestation
+                          </Link>
+                        </Button>
                         <DropdownMenuSeparator />
                         <ModalUpdateCategory
                           category={category}

@@ -20,58 +20,49 @@ import { Textarea } from "@/components/ui/textarea";
 import useAuth from "@/hooks/useAuth";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import { convertToMinutes } from "@/utils/formatting";
-import axios from "axios";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-export default function UpdateService() {
-  const { serviceId } = useParams();
+export default function CreateService() {
   const { auth } = useAuth();
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
 
-  const [service, setService] = useState();
+  const [providerCategoryId, setProviderCategoryId] = useState();
   const [formData, setFormData] = useState();
   const [loading, setLoading] = useState({
-    SPLASH_SCREEN: true,
     SUBMIT_BUTTON: false,
   });
   const [error, setError] = useState({
     REQUIRED_FIELDS: false,
     API_CALL: false,
   });
-  const [showActions, setShowActions] = useState(false);
 
-  const getService = async () => {
-    try {
-      const { data } = await axios.get(`/api/providerService/${serviceId}`);
-      setService(data);
-      setFormData(data);
-    } catch (err) {
-      console.error(err);
-      setError({ ...error, API_CALL: true });
-    } finally {
-      setLoading({
-        ...loading,
-        SPLASH_SCREEN: false,
-      });
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    if (urlParams.get("providerCategoryId")) {
+      setProviderCategoryId(urlParams.get("providerCategoryId"));
+    } else {
+      navigate(-1);
     }
-  };
+  }, []);
 
   const calculateDeposit = (fullPrice) => {
     return Math.round(fullPrice * (auth.defaultDeposit / 100));
   };
 
-  const isCustomPaymentSettings = () => {
-    return (
-      formData.paymentOption !== auth.defaultPaymentOption ||
-      formData.deposit !== calculateDeposit(formData.price)
-    );
+  const cancel = () => {
+    navigate(-1);
   };
 
   const setDefaultPaymentSettings = () => {
+    if (!formData?.price) {
+      return toast.error("Veuillez renseigner un prix");
+    }
+
     setFormData({
       ...formData,
       paymentOption: auth.defaultPaymentOption,
@@ -80,7 +71,6 @@ export default function UpdateService() {
           ? calculateDeposit(formData.price)
           : 0,
     });
-    setShowActions(true);
   };
 
   const handleChange = (e) => {
@@ -94,10 +84,11 @@ export default function UpdateService() {
           ? convertToMinutes(value)
           : value,
     });
-    setShowActions(true);
   };
 
   const formatTime = (minutes) => {
+    if (!minutes) return "00:00";
+
     // Calculate hours and remaining minutes
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
@@ -111,21 +102,13 @@ export default function UpdateService() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.price || !formData.duration) {
+
+    if (!formData?.name || !formData?.price || !formData?.duration) {
       toast.error("Veuillez remplir tous les champs obligatoires");
       setError({ ...error, REQUIRED_FIELDS: true });
       setTimeout(() => {
         setError({ ...error, REQUIRED_FIELDS: false });
       }, 3000);
-      return;
-    }
-
-    const hasChanges = Object.keys(formData).some(
-      (key) => service[key] !== service[key]
-    );
-
-    if (!hasChanges) {
-      toast("Aucune modification n'a été apportée");
       return;
     }
 
@@ -139,8 +122,11 @@ export default function UpdateService() {
         ...loading,
         SUBMIT_BUTTON: true,
       });
-      await axiosPrivate.put(`/api/providerService/${serviceId}`, formData);
-      toast.success("Modifications enregistrées");
+      await axiosPrivate.post("/api/providerService", {
+        ...formData,
+        providerCategoryId,
+      });
+      toast.success("Prestation ajoutée avec succès");
       navigate(-1);
     } catch (error) {
       console.error(error);
@@ -150,26 +136,8 @@ export default function UpdateService() {
         ...loading,
         SUBMIT_BUTTON: false,
       });
-      setShowActions(false);
     }
   };
-
-  const resetForm = () => {
-    setFormData(service);
-    setShowActions(false);
-  };
-
-  useEffect(() => {
-    getService();
-  }, [serviceId]);
-
-  if (loading.SPLASH_SCREEN) {
-    return <div>Loading...</div>;
-  }
-
-  if (error.API_CALL) {
-    return <div>Une erreur s'est produite</div>;
-  }
 
   return (
     <main className="w-full max-w-screen-md mx-auto p-6 flex flex-1 flex-col space-y-4">
@@ -195,20 +163,22 @@ export default function UpdateService() {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to={`/salon/services/${service.name}`}>{service.name}</Link>
+              <Link to={"/salon/services/create-service"}>
+                Ajouter une prestation
+              </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
       <div>
-        <h1 className="text-3xl font-semibold">{service.name}</h1>
+        <h1 className="text-3xl font-semibold">Ajouter une prestation</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-2">
           <div>
             <Label htmlFor="name">Nom</Label>
             <Input
               name="name"
               type="text"
-              value={formData.name}
+              value={formData?.name}
               onChange={handleChange}
               className={
                 error.REQUIRED_FIELDS && "border-destructive animate-pulse"
@@ -221,7 +191,7 @@ export default function UpdateService() {
               <Input
                 name="price"
                 type="number"
-                value={formData.price}
+                value={formData?.price}
                 onChange={handleChange}
                 className={
                   error.REQUIRED_FIELDS && "border-destructive animate-pulse"
@@ -234,12 +204,9 @@ export default function UpdateService() {
               <div className="max-w-sm">
                 <Label>Paiement</Label>
                 <Select
-                  value={formData.paymentOption}
+                  value={formData?.paymentOption}
                   onValueChange={(value) => {
-                    return (
-                      setFormData({ ...formData, paymentOption: value }),
-                      setShowActions(true)
-                    );
+                    setFormData({ ...formData, paymentOption: value });
                   }}
                 >
                   <SelectTrigger>
@@ -261,21 +228,19 @@ export default function UpdateService() {
                     name="deposit"
                     type="number"
                     disabled={formData?.paymentOption !== "DEPOSIT"}
-                    value={formData.deposit}
+                    value={formData?.deposit}
                     onChange={handleChange}
                   />
                 </div>
               </div>
-              {isCustomPaymentSettings() && (
-                <Button
-                  type="button"
-                  onClick={setDefaultPaymentSettings}
-                  variant="link"
-                  className="whitespace-normal text-xs"
-                >
-                  Appliquer les paramètres de paiement par défaut
-                </Button>
-              )}
+              <Button
+                type="button"
+                onClick={setDefaultPaymentSettings}
+                variant="link"
+                className="whitespace-normal text-xs"
+              >
+                Appliquer les paramètres de paiement par défaut
+              </Button>
             </div>
           )}
           <div>
@@ -283,7 +248,7 @@ export default function UpdateService() {
             <Input
               name="duration"
               type="time"
-              value={formatTime(formData.duration)}
+              value={formatTime(formData?.duration)}
               onChange={handleChange}
               className={
                 error.REQUIRED_FIELDS && "border-destructive animate-pulse"
@@ -295,24 +260,22 @@ export default function UpdateService() {
             <Textarea
               name="description"
               className="resize-none"
-              value={formData.description || ""}
+              value={formData?.description || ""}
               onChange={handleChange}
             />
           </div>
-          {showActions && (
-            <div className="flex gap-2">
-              <Button type="submit" disabled={loading.SUBMIT_BUTTON}>
-                {loading.SUBMIT_BUTTON ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  "Enregistrer"
-                )}
-              </Button>
-              <Button variant="outline" onClick={resetForm}>
-                Annuler
-              </Button>
-            </div>
-          )}
+          <div className="flex gap-2">
+            <Button type="submit" disabled={loading.SUBMIT_BUTTON}>
+              {loading.SUBMIT_BUTTON ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                "Enregistrer"
+              )}
+            </Button>
+            <Button type="button" variant="outline" onClick={cancel}>
+              Annuler
+            </Button>
+          </div>
         </form>
       </div>
     </main>

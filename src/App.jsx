@@ -15,6 +15,7 @@ import { AlertCircle, CheckCircle } from "lucide-react";
 import RequireAdmin from "./components/RequireAdmin";
 import LoginMember from "./pages/LoginMember";
 import UpdateService from "./pages/UpdateService";
+import CreateService from "./pages/CreateService";
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Salon = lazy(() => import("./pages/Salon"));
@@ -86,6 +87,14 @@ export default function App() {
                   element={
                     <Suspense fallback={<PageLoader />}>
                       <UpdateService />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="salon/services/create-service"
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <CreateService />
                     </Suspense>
                   }
                 />
