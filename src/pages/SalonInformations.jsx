@@ -1,4 +1,3 @@
-import EditableInput from "@/components/EditableInput";
 import Error from "@/components/Error";
 import ProviderHeader from "@/components/ProviderHeader";
 import {
@@ -15,7 +14,8 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import useAuth from "@/hooks/useAuth";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
-import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -30,21 +30,15 @@ const validFileTypes = ["image/jpeg", "image/jpg", "image/png"];
 export default function SalonInformations() {
   const { auth } = useAuth();
 
-  const [prevInfos, setPrevInfos] = useState(auth);
-  const [salonInfos, setSalonInfos] = useState({
-    name: auth.name,
-    address: auth.address,
-    email: auth.email,
-    phoneNumber: auth.phoneNumber,
-    bookingTerms: auth.bookingTerms,
-    autoAcceptAppointments: auth.autoAcceptAppointments,
-    isInVacancyMode: auth.isInVacancyMode,
-    profilePicture: auth.profilePicture,
-    coverImage: auth.coverImage,
-  });
+  const [salonInfos, setSalonInfos] = useState();
+  const [formData, setFormData] = useState();
+  const [images, setImages] = useState();
 
   const [error, setError] = useState();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState({
+    SPLASH_SCREEN: true,
+    SUBMIT_BUTTON: false,
+  });
 
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
@@ -53,13 +47,23 @@ export default function SalonInformations() {
   async function getSalon() {
     try {
       const { data } = await axiosPrivate.get("/api/salon");
-      setPrevInfos(data);
+      setSalonInfos(data);
+      setFormData(data);
+      setImages({
+        profilePicture: data.profilePicture,
+        coverImage: data.coverImage,
+      });
       return data;
     } catch (error) {
       setError(error);
       if (error.response?.status === 401) {
         navigate("/login", { state: { from: location }, replace: true });
       }
+    } finally {
+      setLoading({
+        ...loading,
+        SPLASH_SCREEN: false,
+      });
     }
   }
 
@@ -68,7 +72,10 @@ export default function SalonInformations() {
       await axiosPrivate.delete("/api/s3/profile", {
         profilePicture: null,
       });
-      await getSalon();
+      setImages({
+        ...images,
+        profilePicture: null,
+      });
     } catch (error) {
       console.log(error);
     }
@@ -79,76 +86,63 @@ export default function SalonInformations() {
       await axiosPrivate.delete("/api/s3/cover", {
         coverImage: null,
       });
-      await getSalon();
+      setImages({
+        ...images,
+        coverImage: null,
+      });
     } catch (error) {
       console.log(error);
     }
   };
 
-  const resetSalonInfos = () => {
-    setSalonInfos({
-      name: auth.name,
-      address: auth.address,
-      email: auth.email,
-      phoneNumber: auth.phoneNumber,
-      bookingTerms: auth.bookingTerms,
-      autoAcceptAppointments: auth.autoAcceptAppointments,
-      isInVacancyMode: auth.isInVacancyMode,
-      profilePicture: auth.profilePicture,
-      coverImage: auth.coverImage,
-    });
-  };
-
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setSalonInfos({ ...salonInfos, [id]: value });
+    setFormData({ ...formData, [id]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
 
-    const { name, email, phoneNumber } = salonInfos;
+    const { name, email, phoneNumber } = formData;
     if (!name || !email || !phoneNumber) {
-      setLoading(false);
       toast.error("Veuillez renseigner tous les champs obligatoires");
       return;
     }
 
-    const hasChanges = Object.keys(salonInfos).some(
-      (key) => salonInfos[key] !== prevInfos[key]
+    const hasChanges = Object.keys(formData).some(
+      (key) => formData[key] !== salonInfos[key]
     );
 
     if (!hasChanges) {
-      setLoading(false);
       toast("Aucune modification n'a été effectuée");
       return;
     }
 
     if (email && !EMAIL_REGEX.test(email)) {
       toast.error("L'adresse email n'est pas valide");
-      setLoading(false);
       return;
     }
 
     if (phoneNumber && !PHONE_NUMBER_REGEX.test(phoneNumber)) {
       toast.error("Le numéro de téléphone n'est pas valide");
-      setLoading(false);
       return;
     }
 
-    // Optimistically update the UI before making the API call
-    const updatedInfos = { ...salonInfos };
-    setSalonInfos(updatedInfos); // Immediately update the state to reflect changes
-
     try {
-      await axiosPrivate.patch("/api/salon", { ...salonInfos });
+      setLoading({
+        ...loading,
+        SUBMIT_BUTTON: true,
+      });
+      await axiosPrivate.patch("/api/salon", { ...formData });
       toast("Modifications enregistrées");
     } catch (error) {
-      resetSalonInfos();
       toast.error("Une erreur est survenue, veuillez contacter le support");
+    } finally {
+      setLoading({
+        ...loading,
+        SUBMIT_BUTTON: false,
+      });
     }
-    setLoading(false);
   };
 
   const handleUpload = async (e) => {
@@ -164,9 +158,7 @@ export default function SalonInformations() {
 
     const imgType = id === "profile" ? "profilePicture" : "coverImage";
     const imgPath = id === "profile" ? "profile-picture" : "cover/cover-image";
-    const imgUrl = `https://wcntbucket.s3.eu-west-3.amazonaws.com/user-${
-      auth.id
-    }/${imgPath}?t=${new Date().getTime()}`;
+    const imgUrl = `https://wcntbucket.s3.eu-west-3.amazonaws.com/user-${auth.id}/${imgPath}`;
 
     try {
       await axiosPrivate.post(`/api/s3/${id}`, formData, {
@@ -174,9 +166,9 @@ export default function SalonInformations() {
           "Content-Type": "multipart/form-data",
         },
       });
-      setSalonInfos({
-        ...salonInfos,
-        [imgType]: imgUrl,
+      setImages({
+        ...images,
+        [imgType]: `${imgUrl}?t=${new Date().getTime()}`,
       });
       toast.success("Photo mise à jour avec succès");
     } catch (error) {
@@ -185,10 +177,16 @@ export default function SalonInformations() {
     }
   };
 
-  console.log(salonInfos);
+  useEffect(() => {
+    getSalon();
+  }, []);
 
   if (error) {
     return <Error errMsg={error} />;
+  }
+
+  if (loading.SPLASH_SCREEN) {
+    return <div>Loading...</div>;
   }
 
   return (
@@ -216,16 +214,16 @@ export default function SalonInformations() {
       </Breadcrumb>
       <h1 className="text-3xl font-semibold">Mes informations</h1>
       <ProviderHeader
-        name={salonInfos.name}
-        address={salonInfos.address}
-        profilePicture={auth.profilePicture}
-        coverImage={auth.coverImage}
+        name={formData.name}
+        address={formData.address}
+        profilePicture={images.profilePicture}
+        coverImage={images.coverImage}
         rmprofile={rmprofile}
         rmcover={rmcover}
       />
       <div className="space-y-2 md:space-y-0 md:grid grid-cols-2 md:gap-4">
         <Button asChild>
-          <Label htmlFor="profile" className=" w-full">
+          <Label htmlFor="profile" className="w-full">
             Changer ma photo de profil
           </Label>
         </Button>
@@ -236,7 +234,7 @@ export default function SalonInformations() {
           onChange={handleUpload}
         />
         <Button asChild>
-          <Label htmlFor="cover" className=" w-full">
+          <Label htmlFor="cover" className="w-full">
             Changer ma photo de couverture
           </Label>
         </Button>
@@ -249,34 +247,46 @@ export default function SalonInformations() {
       </div>
       <form className="space-y-2">
         <div className="space-y-2 md:space-y-0 md:grid grid-cols-2 md:gap-4">
-          <EditableInput
-            id="name"
-            label="Nom du salon"
-            type="text"
-            defaultValue={salonInfos.name}
-            handleChange={handleChange}
-          />
-          <EditableInput
-            id="address"
-            label="Adresse"
-            type="text"
-            defaultValue={salonInfos.address}
-            handleChange={handleChange}
-          />
-          <EditableInput
-            id="phoneNumber"
-            label="Téléphone du salon"
-            type="tel"
-            defaultValue={salonInfos.phoneNumber}
-            handleChange={handleChange}
-          />
-          <EditableInput
-            id="email"
-            label="Email"
-            type="email"
-            defaultValue={salonInfos.email}
-            handleChange={handleChange}
-          />
+          <div>
+            <Label htmlFor={"name"}>Nom du salon</Label>
+            <Input
+              id="name"
+              type="text"
+              value={formData?.name}
+              onChange={handleChange}
+              className="text-lg"
+            />
+          </div>
+          <div>
+            <Label htmlFor={"address"}>Adresse</Label>
+            <Input
+              id="address"
+              type="text"
+              value={formData.address}
+              onChange={handleChange}
+              className="text-lg"
+            />
+          </div>
+          <div>
+            <Label htmlFor={"phoneNumber"}>Téléphone du salon</Label>
+            <Input
+              id="phoneNumber"
+              type="tel"
+              value={formData.phoneNumber}
+              onChange={handleChange}
+              className="text-lg"
+            />
+          </div>
+          <div>
+            <Label htmlFor={"email"}>Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="text-lg"
+            />
+          </div>
         </div>
         <div>
           <Label htmlFor="autoAccept">Confirmation automatique</Label>
@@ -288,10 +298,10 @@ export default function SalonInformations() {
               </p>
               <Switch
                 id="autoAccept"
-                checked={salonInfos?.autoAcceptAppointments}
+                checked={formData?.autoAcceptAppointments}
                 onCheckedChange={(checked) => {
-                  setSalonInfos({
-                    ...salonInfos,
+                  setFormData({
+                    ...formData,
                     autoAcceptAppointments: checked,
                   });
                 }}
@@ -316,10 +326,10 @@ export default function SalonInformations() {
               </p>
               <Switch
                 id="vacancyMode"
-                checked={salonInfos?.isInVacancyMode}
+                checked={formData?.isInVacancyMode}
                 onCheckedChange={(checked) => {
-                  setSalonInfos({
-                    ...salonInfos,
+                  setFormData({
+                    ...formData,
                     isInVacancyMode: checked,
                   });
                 }}
@@ -338,16 +348,24 @@ export default function SalonInformations() {
           <Textarea
             id="bookingTerms"
             type="text"
-            defaultValue={salonInfos.bookingTerms}
+            defaultValue={formData.bookingTerms}
             onChange={handleChange}
             className="text-lg whitespace-pre-line"
           />
         </div>
         <div className="flex gap-2">
-          <Button onClick={handleSubmit} disabled={loading}>
-            Enregistrer les modifications
+          <Button onClick={handleSubmit} disabled={loading.SUBMIT_BUTTON}>
+            {loading.SUBMIT_BUTTON ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              "Enregistrer les modifications"
+            )}
           </Button>
-          <Button variant="outline" type="reset" onClick={resetSalonInfos}>
+          <Button
+            variant="outline"
+            type="button"
+            onClick={() => setFormData(salonInfos)}
+          >
             Annuler
           </Button>
         </div>
