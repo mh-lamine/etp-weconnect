@@ -15,7 +15,6 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import useAuth from "@/hooks/useAuth";
 import useAxiosPrivate from "@/hooks/useAxiosPrivate";
-import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -144,7 +143,6 @@ export default function SalonInformations() {
 
     try {
       await axiosPrivate.patch("/api/salon", { ...salonInfos });
-      await getSalon();
       toast("Modifications enregistrées");
     } catch (error) {
       resetSalonInfos();
@@ -158,10 +156,17 @@ export default function SalonInformations() {
 
     if (!validFileTypes.includes(files[0].type)) {
       toast.error("Le format du fichier n'est pas valide");
+      return;
     }
 
     const formData = new FormData();
     formData.append(id, files[0]);
+
+    const imgType = id === "profile" ? "profilePicture" : "coverImage";
+    const imgPath = id === "profile" ? "profile-picture" : "cover/cover-image";
+    const imgUrl = `https://wcntbucket.s3.eu-west-3.amazonaws.com/user-${
+      auth.id
+    }/${imgPath}?t=${new Date().getTime()}`;
 
     try {
       await axiosPrivate.post(`/api/s3/${id}`, formData, {
@@ -169,17 +174,18 @@ export default function SalonInformations() {
           "Content-Type": "multipart/form-data",
         },
       });
-      getSalon();
-      toast.success("Photo de profil mise à jour avec succès");
+      setSalonInfos({
+        ...salonInfos,
+        [imgType]: imgUrl,
+      });
+      toast.success("Photo mise à jour avec succès");
     } catch (error) {
-      if (error.response.status === 413) {
-        toast.error("Le fichier est trop volumineux");
-      } else {
-        console.error(error.response.data.message);
-        toast.error("Une erreur est survenue, veuillez contacter le support");
-      }
+      console.error(error.response.data.message);
+      toast.error("Une erreur est survenue, veuillez contacter le support");
     }
   };
+
+  console.log(salonInfos);
 
   if (error) {
     return <Error errMsg={error} />;
@@ -212,8 +218,8 @@ export default function SalonInformations() {
       <ProviderHeader
         name={salonInfos.name}
         address={salonInfos.address}
-        profilePicture={salonInfos.profilePicture}
-        coverImage={salonInfos.coverImage}
+        profilePicture={auth.profilePicture}
+        coverImage={auth.coverImage}
         rmprofile={rmprofile}
         rmcover={rmcover}
       />
@@ -282,9 +288,7 @@ export default function SalonInformations() {
               </p>
               <Switch
                 id="autoAccept"
-                checked={
-                  salonInfos?.autoAcceptAppointments
-                }
+                checked={salonInfos?.autoAcceptAppointments}
                 onCheckedChange={(checked) => {
                   setSalonInfos({
                     ...salonInfos,
@@ -312,9 +316,7 @@ export default function SalonInformations() {
               </p>
               <Switch
                 id="vacancyMode"
-                checked={
-                  salonInfos?.isInVacancyMode
-                }
+                checked={salonInfos?.isInVacancyMode}
                 onCheckedChange={(checked) => {
                   setSalonInfos({
                     ...salonInfos,
