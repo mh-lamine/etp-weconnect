@@ -177,7 +177,7 @@ const SalonAvailabilities = () => {
         </BreadcrumbList>
       </Breadcrumb>
       <h1 className="text-3xl font-semibold">
-        {id ? `${member?.firstName} ${member?.lastName}` : "Mes horaires"}
+        {id ? `${member?.firstName} ${member?.lastName}` : "Horaires du salon"}
       </h1>
       <Tabs defaultValue="weekly" className="space-y-4">
         <TabsList>

@@ -268,7 +268,7 @@ const SalonServices = () => {
                               </Popover>
                             </div>
                             <div className="space-y-4">
-                              <p className="pr-4 line-clamp-2 text-muted">
+                              <p className="pr-4 line-clamp-2 text-muted whitespace-pre-line">
                                 {service.description}
                               </p>
                               <div className="flex flex-wrap gap-2 items-center justify-between pr-4">
@@ -351,7 +351,7 @@ const SalonServices = () => {
                               </div>
                             )}
                           </div>
-                          <p>{service.description}</p>
+                          <p className="whitespace-pre-line">{service.description}</p>
                         </div>
                       </li>
                     )
