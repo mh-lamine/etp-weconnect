@@ -20,7 +20,10 @@ import useAxiosPrivate from "@/hooks/useAxiosPrivate";
 import useLogout from "@/hooks/useLogout";
 import { cn } from "@/lib/utils";
 import { getInitials } from "@/utils/formatting";
+import FullCalendar from "@fullcalendar/react";
+import timeGridPlugin from "@fullcalendar/timegrid";
 import { Settings } from "lucide-react";
+import { DateTime } from "luxon";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -105,6 +108,43 @@ export default function Dashboard() {
   const todaysAppointments = appointments?.todaysAppointments || [];
   const futureAppointments = appointments?.futureAppointments || [];
 
+  const formatCalendarAppointments = (salonAppointments) => {
+    return salonAppointments.map((apt) => {
+      const {
+        date,
+        duration,
+        id,
+        member,
+        service,
+        client,
+        status,
+        paymentStatus,
+      } = apt;
+      const startDate = new Date(date);
+      const endDate = new Date(startDate.getTime() + duration * 60000);
+
+      const endTime = DateTime.fromJSDate(endDate).toISO({
+        includeOffset: false,
+      });
+
+      return {
+        id: id,
+        start: date,
+        end: endTime,
+        title: `${member.firstName} ${member.lastName}`,
+        description: service.name,
+        color: status === "PENDING" ? "#FFA500" : "#008000",
+        extendedProps: {
+          // Additional data you might need
+          client: client,
+          service: service,
+          status: status,
+          paymentStatus: paymentStatus,
+        },
+      };
+    });
+  };
+
   return (
     <main className="w-full h-full max-w-screen-md mx-auto p-6 flex flex-1 flex-col gap-4">
       <Breadcrumb className="h-0 p-0">
@@ -177,7 +217,7 @@ export default function Dashboard() {
               <p className="text-muted">
                 Vous avez {todaysAppointments.length} rendez-vous aujourd'hui.
               </p>
-              {filterAndSortAppointments(todaysAppointments, "ACCEPTED").map(
+              {/* {filterAndSortAppointments(todaysAppointments, "ACCEPTED").map(
                 (appointment) => (
                   <ProviderAppointment
                     key={appointment.id}
@@ -187,7 +227,50 @@ export default function Dashboard() {
                     isAdmin={isAdmin}
                   />
                 )
-              )}
+              )} */}
+              <div className="overflow-x-auto">
+                <div className="min-w-[960px] fc-scrollable">
+                  <FullCalendar
+                    plugins={[timeGridPlugin]}
+                    initialView="timeGridWeek"
+                    firstDay={new Date().getDay() - 1}
+                    allDaySlot={false}
+                    events={formatCalendarAppointments([
+                      ...todaysAppointments,
+                      ...futureAppointments,
+                    ])}
+                    headerToolbar={{
+                      left: "prev,next,today",
+                      center: "",
+                      right: "",
+                    }}
+                    buttonText={{
+                      today: "Aujourd'hui",
+                    }}
+                    contentHeight="auto"
+                    slotMinTime="08:00:00"
+                    slotMaxTime="20:00:00"
+                    slotDuration="00:20:00"
+                    locale="fr"
+                    nowIndicator="true"
+                    eventContent={({ event }) => {
+                      const { client, description, paymentStatus } =
+                        event.extendedProps;
+                      return (
+                        <>
+                          <p>
+                            {client.firstName} {client.lastName}
+                          </p>
+                          <span>
+                            {description} {paymentStatus}
+                          </span>
+                        </>
+                      );
+                    }}
+                  />
+                </div>
+              </div>
+
               <div className="divider divider-start text-muted">
                 Mes rendez-vous passés
               </div>
