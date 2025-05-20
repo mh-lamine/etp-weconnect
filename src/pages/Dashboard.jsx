@@ -29,7 +29,6 @@ import { Link, useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const [appointments, setAppointments] = useState();
-  const [businessHours, setBusinessHours] = useState();
   const [apiLoading, setApiLoading] = useState(true);
   const [members, setMembers] = useState();
   const [memberToSort, setMemberToSort] = useState();
@@ -91,37 +90,11 @@ export default function Dashboard() {
     navigate("/login");
   };
 
-  const formatBusinessHours = (availabilities) => {
-    //FIXME: take into account special availabilities
-    //TODO: show a booked slot for unavailabilities
-
-    const earliestTime = DateTime.min(
-      ...availabilities.map((avail) =>
-        DateTime.fromFormat(avail.startTime, "HH:mm")
-      )
-    ).toFormat("HH:mm");
-
-    const latestTime = DateTime.max(
-      ...availabilities.map((avail) =>
-        DateTime.fromFormat(avail.endTime, "HH:mm")
-      )
-    ).toFormat("HH:mm");
-
-    return { earliestTime, latestTime };
-  };
-
   useEffect(() => {
     async function init() {
       try {
-        const { data: members } = await axiosPrivate.get("/api/salon/members");
-        setMembers(members);
-        const { data } = await axiosPrivate.get("/api/availabilities");
-        setBusinessHours(
-          formatBusinessHours([
-            ...data.availabilities,
-            ...data.specialAvailabilities,
-          ])
-        );
+        const { data } = await axiosPrivate.get("/api/salon/members");
+        setMembers(data);
         await getAppointmentsAsProvider();
       } catch (error) {
         console.error(error);
@@ -275,8 +248,8 @@ export default function Dashboard() {
                       today: "Aujourd'hui",
                     }}
                     contentHeight="auto"
-                    slotMinTime={businessHours?.earliestTime}
-                    slotMaxTime={businessHours?.latestTime}
+                    slotMinTime="08:00:00"
+                    slotMaxTime="20:00:00"
                     slotDuration="00:20:00"
                     locale="fr"
                     nowIndicator="true"
