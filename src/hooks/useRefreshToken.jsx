@@ -11,10 +11,11 @@ const useRefreshToken = () => {
       });
 
       setAuth(data);
-
-      // return data.accessToken;
+      return data.accessToken;
     } catch (error) {
-      console.error("error", error);
+      console.error("Failed to refresh token:", error.message);
+      setAuth({}); // Clear auth state on refresh failure
+      throw error; // Propagate error to caller for proper handling
     }
   };
 
