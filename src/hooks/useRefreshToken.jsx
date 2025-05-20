@@ -1,21 +1,21 @@
+import axios from "axios";
 import useAuth from "./useAuth";
 
 const useRefreshToken = () => {
   const { setAuth } = useAuth();
 
   const refresh = async () => {
-    // Mock implementation that returns dummy access token
-    const mockData = {
-      accessToken: 'mock_token',
-      role: 'SALON',
-      id: 'mock_user_id',
-      email: 'mock@example.com',
-      defaultPaymentOption: 'DEPOSIT',
-      defaultDeposit: 30,
-      stripeConnectedAccountId: 'mock_stripe_id'
-    };
-    setAuth(mockData);
-    return mockData.accessToken;
+    try {
+      const { data } = await axios.get("/api/auth/refresh", {
+        withCredentials: true,
+      });
+
+      setAuth(data);
+
+      // return data.accessToken;
+    } catch (error) {
+      console.error("error", error);
+    }
   };
 
   return refresh;

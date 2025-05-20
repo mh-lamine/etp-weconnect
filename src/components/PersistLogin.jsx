@@ -14,7 +14,7 @@ const PersistLogin = () => {
       try {
         await refresh();
       } catch (error) {
-        console.error("Token verification failed:", error);
+        console.error(error);
       }
       setLoading(false);
     };
