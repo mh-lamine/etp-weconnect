@@ -9,11 +9,6 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  server: {
-    proxy: {
-      "/api": "http://localhost:8080",
-    },
-  },
   build: {
     outDir: "../serv/static/etp-weconnect",
     emptyOutDir: true,

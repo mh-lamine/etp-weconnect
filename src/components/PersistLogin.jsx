@@ -13,6 +13,11 @@ const PersistLogin = () => {
   useEffect(() => {
     const verifyRefreshToken = async () => {
       try {
+        // Bypass refresh token verification in development mode
+        if (import.meta.env.DEV) {
+          setLoading(false);
+          return;
+        }
         await refresh();
       } catch (error) {
         console.error("Token verification failed:", error.message);
